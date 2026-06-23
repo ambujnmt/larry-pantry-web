@@ -28,7 +28,7 @@ function CustomerDashboardLayout({ children }) {
   return (
     <div className="app">
       <style>{`
-        html, body, #root { height: 100%; }
+        html, body, #root { height: 100%; overflow-x: hidden; }
         .app { min-height: 100vh; display: flex; flex-direction: column; }
         .app-wrapper { flex: 1; }
 

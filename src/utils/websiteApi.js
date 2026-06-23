@@ -4,7 +4,7 @@
 // const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api"
 
 /*-- For Local --*/
-const API_BASE_URL = "http://localhost:8000/api/website"
+const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api/website"
 
 // ─── Base Client (POST) ───────────────────────────────────────────────────────
 

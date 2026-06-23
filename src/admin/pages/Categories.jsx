@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import DataTable from 'datatables.net-react'
-import DT from 'datatables.net-dt'
-import 'datatables.net-dt/css/dataTables.dataTables.css'
+import DT from 'datatables.net-bs5'
 import { getCategories, createCategory, updateCategory, deleteCategory, dtOptions } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
 

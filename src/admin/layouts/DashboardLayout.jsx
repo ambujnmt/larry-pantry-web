@@ -29,7 +29,7 @@ function DashboardLayout({ children }) {
   return (
     <div className="app">
       <style>{`
-        html, body, #root { height: 100%; }
+        html, body, #root { height: 100%; overflow-x: hidden; }
 
         .app { min-height: 100vh; display: flex; flex-direction: column; }
         .app-wrapper { flex: 1; }
@@ -65,6 +65,23 @@ function DashboardLayout({ children }) {
         .table.dataTable thead th {
             background-color: var(--bs-secondary) !important;
             color: white !important;
+        }
+
+        .dt-length label,
+        .dataTables_length label {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            white-space: nowrap !important;
+            margin-bottom: 0 !important;
+        }
+        .dt-length select,
+        .dt-length select.form-select,
+        .dataTables_length select,
+        .dataTables_length select.form-select {
+            width: auto !important;
+            display: inline-block !important;
+            flex-shrink: 0 !important;
         }
       `}</style>
 

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from 'datatables.net-react'
-import DT from 'datatables.net-dt'
-import 'datatables.net-dt/css/dataTables.dataTables.css'
+import DT from 'datatables.net-bs5'
 import Swal from "sweetalert2"
 import {
   getUsers, updateUserStatus, deleteUser, dtOptions, STORAGE_URL,

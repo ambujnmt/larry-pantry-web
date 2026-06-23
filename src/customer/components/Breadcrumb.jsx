@@ -19,5 +19,4 @@ function Breadcrumb({ pageTitle }) {
     </section>
   );
 }
-
 export default Breadcrumb;
