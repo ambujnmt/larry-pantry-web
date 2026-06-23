@@ -14,7 +14,7 @@ const defaultForm = {
   is_featured: 0, status: 1
 }
 
-const defaultVariant = { unit_id: "", regular_price: "", selling_price: "", is_default: 0 }
+const defaultVariant = { unit_id: "", quantity: "", regular_price: "", selling_price: "", is_default: 0 }
 
 function Products() {
   const [products, setProducts]       = useState([])
@@ -78,7 +78,7 @@ function Products() {
     })
     setVariants(p.variants?.length > 0
       ? p.variants.map(v => ({
-          id: v.id, unit_id: v.unit_id,
+          id: v.id, unit_id: v.unit_id, quantity: v.quantity,
           regular_price: v.regular_price, selling_price: v.selling_price,
           is_default: v.is_default
         }))
@@ -108,8 +108,8 @@ function Products() {
     e.preventDefault()
     if (!form.name.trim())    { setError("Product name is required."); return }
     if (!form.category_id)    { setError("Category is required."); return }
-    if (variants.some(v => !v.unit_id || !v.regular_price || !v.selling_price)) {
-      setError("All variants must have unit, regular price and selling price."); return
+    if (variants.some(v => !v.quantity || !v.unit_id || !v.regular_price || !v.selling_price)) {
+      setError("All variants must have quantity, unit, regular price and selling price."); return
     }
     setSaving(true); setError("")
     try {
@@ -338,14 +338,20 @@ function Products() {
                         </div>
                         <div className="border rounded p-3" style={{ background: '#f8fafc' }}>
                           <div className="row g-2 mb-1">
-                            <div className="col-md-3"><small className="text-secondary">Unit <span className="text-danger">*</span></small></div>
+                            <div className="col-md-2"><small className="text-secondary">Qty <span className="text-danger">*</span></small></div>
+                            <div className="col-md-2"><small className="text-secondary">Unit <span className="text-danger">*</span></small></div>
                             <div className="col-md-3"><small className="text-secondary">Regular Price ($) <span className="text-danger">*</span></small></div>
-                            <div className="col-md-4"><small className="text-secondary">Selling Price ($) <span className="text-danger">*</span></small></div>
+                            <div className="col-md-3"><small className="text-secondary">Selling Price ($) <span className="text-danger">*</span></small></div>
                             <div className="col-md-2"><small className="text-secondary">Default</small></div>
                           </div>
                           {variants.map((v, i) => (
                             <div key={i} className="row g-2 align-items-center mb-2">
-                              <div className="col-md-3">
+                              <div className="col-md-2">
+                                <input type="number" step="0.01" min="0" className="form-control form-control-sm"
+                                  placeholder="e.g. 5" value={v.quantity}
+                                  onChange={e => updateVariant(i, 'quantity', e.target.value)} required />
+                              </div>
+                              <div className="col-md-2">
                                 <select className="form-select form-select-sm" value={v.unit_id}
                                   onChange={e => updateVariant(i, 'unit_id', e.target.value)} required>
                                   <option value="">Unit</option>
@@ -357,7 +363,7 @@ function Products() {
                                   placeholder="Required" value={v.regular_price}
                                   onChange={e => updateVariant(i, 'regular_price', e.target.value)} required />
                               </div>
-                              <div className="col-md-4">
+                              <div className="col-md-3">
                                 <input type="number" step="0.01" min="0" className="form-control form-control-sm"
                                   placeholder="Required" value={v.selling_price}
                                   onChange={e => updateVariant(i, 'selling_price', e.target.value)} required />
