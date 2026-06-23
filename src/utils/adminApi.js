@@ -5,8 +5,8 @@
 // export const STORAGE_URL = "https://site2demo.in/larry-pantry-api/admin_images/"
 
 /*-- For Local --*/
-const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api"
-export const STORAGE_URL = "https://site2demo.in/larry-pantry-api/admin_images/"
+const API_BASE_URL = "http://localhost:8000/api"
+export const STORAGE_URL = "http://localhost:8000/admin_images/"
 
 export const dtOptions = {
   pageLength: 50,
