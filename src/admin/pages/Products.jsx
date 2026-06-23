@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'
+import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css'
 import JoditEditor from "jodit-react"
 import { getProducts, createProduct, updateProduct, deleteProduct, deleteProductImage, getCategories, getUnits, getBrands, dtOptions } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
@@ -33,6 +34,7 @@ function Products() {
   const [newImages, setNewImages]     = useState([])
   const [newPreviews, setNewPreviews] = useState([])
   const fileRef = useRef()
+  const joditConfig = useMemo(() => ({ height: 300, zIndex: 10100 }), [])
 
   useEffect(() => {
     const load = async () => {
@@ -381,7 +383,7 @@ function Products() {
                       {/* Description */}
                       <div className="col-12 mb-3">
                         <label className="form-label small text-secondary">Description</label>
-                        <JoditEditor value={form.description} onBlur={content => setForm({ ...form, description: content })} />
+                        <JoditEditor config={joditConfig} value={form.description} onBlur={content => setForm({ ...form, description: content })} />
                       </div>
 
                       {/* Flags */}
