@@ -1,7 +1,7 @@
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 /*-- For Live --*/
-const API_BASE_URL = "http://localhost:8000/api/customer"
+const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api/customer"
 export const STORAGE_URL = "https://site2demo.in/larry-pantry-api/admin_images/"
 
 /*-- For Local --*/
