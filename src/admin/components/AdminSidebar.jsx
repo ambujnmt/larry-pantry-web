@@ -1,6 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { adminLogout } from "../../utils/adminApi";
 import Swal from "sweetalert2";
+import { useState, useEffect } from "react"
+import { getLogoSettings } from "../../utils/adminApi"
 
 const NAV = [
   {
@@ -13,6 +15,14 @@ const NAV = [
       { to: "/admin/brands",    icon: "fa-tag",         label: "Brands" },
       { to: "/admin/units",     icon: "fa-ruler",       label: "Units" },
       { to: "/admin/orders",   icon: "fa-bag-shopping", label: "All Orders" },
+    ],
+  },
+  {
+    section: "SETTINGS",
+    items: [
+      { to: "/admin/settings/contact",      icon: "fa-phone",        label: "Contact Setting" },
+      { to: "/admin/settings/social-media", icon: "fa-share-nodes",  label: "Social Media" },
+      { to: "/admin/settings/logo",         icon: "fa-image",        label: "Website Logo" },
     ],
   },
   {
@@ -46,6 +56,15 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   };
 
   const isActive = (path) => location.pathname === path;
+
+  /*---- Logo -----*/
+  const [logoUrl, setLogoUrl] = useState("/admin-assets/images/logo.png")
+  useEffect(() => {
+    getLogoSettings()
+      .then(res => { if (res.data?.logo_url) setLogoUrl(res.data.logo_url) })
+      .catch(() => {}) // fallback default logo rahega
+  }, [])
+  /*---------------*/
 
   return (
     <>
@@ -119,7 +138,8 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           {/* Logo */}
           <div className="app-branding" style={{ padding: '16px 16px 8px' }}>
             <Link to="/admin/dashboard" style={{ display: 'flex', alignItems: 'center' }}>
-              <img src="/admin-assets/images/logo.png" alt="logo"
+              <img src={logoUrl} alt="logo"
+                onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/logo.png" }}
                 style={{ maxHeight: 44, objectFit: 'contain' }} />
             </Link>
           </div>
