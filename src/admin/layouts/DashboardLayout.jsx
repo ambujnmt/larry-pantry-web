@@ -55,7 +55,6 @@ function DashboardLayout({ children }) {
         .sidepanel-drop {
           position: fixed; inset: 0;
           background: rgba(0,0,0,0.35);
-          z-index: 1024;
         }
 
         /* SweetAlert2 — admin portal CSS ke upar */
