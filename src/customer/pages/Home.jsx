@@ -263,39 +263,6 @@ function Home() {
       </section>
       {/* Category Section End */}
 
-
-      {/* Banner Section Start */}
-      <div className="banner-section section-space-ptb">
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-6 col-md-6">
-              <a href="#" className="single-banner-area">
-                <div className="single-benner-image">
-                  <img src="assets/img/image-banner1.jpg" alt="image" />
-                </div>
-                <div className="banner-content">
-                  <h2 className="banner-title2">Lorem ipsum dolor sit</h2>
-                  <h2 className="banner-offer">FROM 20% OFF</h2>
-                </div>
-              </a>
-            </div>
-            <div className="col-lg-6 col-md-6">
-              <a href="#" className="single-banner-area sm-mt-30">
-                <div className="single-benner-image">
-                  <img src="assets/img/image-banner2.jpg" alt="image" />
-                </div>
-                <div className="banner-content">
-                  <h2 className="banner-title2">Lorem ipsum dolor sit</h2>
-                  <h2 className="banner-offer">FROM 30% OFF</h2>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Banner Section End */}
-
-
       {/* New Arrivals Section Start */}
       <section className="product-item-section pb-5">
         <div className="container">
@@ -316,52 +283,13 @@ function Home() {
       </section>
       {/* New Arrivals Section End */}
 
-
-      {/* ================= Banner Section Start ================= */}
-      <section className="banner-section banner-sec1">
-        <div className="container">
-          <div className="row">
-
-            {/* Large Banner */}
-            <div className="col-lg-8 col-md-8">
-              <a href="/" className="single-banner-area">
-                <div className="single-benner-image">
-                  <img src="assets/img/image-banner3.jpg" alt="Main Banner" />
-                </div>
-                <div className="banner-content">
-                  <h2 className="banner-title">Lorem ipsum, dolor sit</h2>
-                  <h2 className="banner-title2 fw-semibold">Lorem ipsum dolor sit amet</h2>
-                  <h2 className="banner-offer mt-3">$30.66</h2>
-                </div>
-              </a>
-            </div>
-
-            {/* Small Banner */}
-            <div className="col-lg-4 col-md-4">
-              <a href="/" className="single-banner-area sm-mt-30">
-                <div className="single-benner-image">
-                  <img src="assets/img/image-banner4.jpg" alt="Side Banner" />
-                </div>
-                <div className="banner-content">
-                  <h2 className="banner-title">Lorem</h2>
-                  <h2 className="banner-title2 fw-semibold">ipsum, dolor sit</h2>
-                  <h2 className="banner-offer mt-3">$26.88</h2>
-                </div>
-              </a>
-            </div>
-
-          </div>
-        </div>
-      </section>
-      {/* ================= Banner Section End ================= */}
-
       {/* Banner Start */}
       <section className="banner-section">
         <div className="container-fluid px-0">
 
           <div className="row gx-0">
 
-            <div className="col-md-4">
+            <div className="col-md-6">
               <a href="/" className="inner-image">
                 <img
                   src="assets/img/img2.avif"
@@ -370,40 +298,7 @@ function Home() {
               </a>
             </div>
 
-            <div className="col-md-4">
-              <a
-                href="/"
-                className="inner-image position-relative"
-              >
-                <img
-                  src="assets/images/banners/img2_banner2_mixy4.webp"
-                  alt="banner"
-                />
-
-                <div className="banner-content banner-lg-text text-center w-100 start-0">
-
-                  <h2 className="banner-title text-white">
-                    Get Your Free Estimate
-                  </h2>
-
-                  <h2 className="banner-title-2 text-white">
-                    (323) 963-1600
-                  </h2>
-
-                  <h2 className="banner-offer text-white">
-                    restaurantpantryla@gmial.com
-                  </h2>
-
-                  <span className="mt-5 fw-semibold btn btn--primary btn--meddim">
-                    Contact Us
-                    <i className="icon-rt-arrow-right-solid"></i>
-                  </span>
-
-                </div>
-              </a>
-            </div>
-
-            <div className="col-md-4">
+            <div className="col-md-6">
               <a href="/" className="inner-image">
                 <img
                   src="assets/img/img3.avif"
