@@ -1,10 +1,10 @@
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 /*-- For Live --*/
-// const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api/website"
+const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api/website"
 
 /*-- For Local --*/
-const API_BASE_URL = "http://localhost/larry-pantry-api/api/website"
+// const API_BASE_URL = "http://localhost/larry-pantry-api/api/website"
 
 // ─── Base Client (POST) ───────────────────────────────────────────────────────
 
