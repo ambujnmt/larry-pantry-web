@@ -389,7 +389,7 @@ function Products() {
 
                       {/* Description */}
                       <div className="col-12 mb-3">
-                        <label className="form-label small text-secondary">Description U </label>
+                        <label className="form-label small text-secondary">Description</label>
                         <Suspense fallback={
                           <div className="border rounded p-2 text-muted small" style={{ minHeight: 80 }}>
                             Loading editor...
