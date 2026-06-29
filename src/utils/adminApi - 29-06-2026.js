@@ -137,23 +137,3 @@ export const deleteUnit = (id) => client(`/admin/units/${id}`, { method: "DELETE
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export const getAdminOrders = () => client("/admin/all-orders", { method: "POST", auth: true })
-
-// ─── Settings ─────────────────────────────────────────────────────────────────
-
-export const getContactSettings = () =>
-  client("/admin/settings/contact", { auth: true })
-
-export const updateContactSettings = (data) =>
-  client("/admin/settings/contact", { method: "POST", auth: true, body: data })
-
-export const getSocialSettings = () =>
-  client("/admin/settings/social", { auth: true })
-
-export const updateSocialSettings = (data) =>
-  client("/admin/settings/social", { method: "POST", auth: true, body: data })
-
-export const getLogoSettings = () =>
-  client("/admin/settings/logo", { auth: true })
-
-export const updateLogoSettings = (formData) =>
-  formRequest("/admin/settings/logo", formData)

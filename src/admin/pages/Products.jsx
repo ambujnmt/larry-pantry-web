@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useMemo } from "react"
 import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'
 import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css'
-import JoditEditor from "jodit-react"
+import { lazy, Suspense } from "react"
+const JoditEditor = lazy(() => import("jodit-react"))
 import { getProducts, createProduct, updateProduct, deleteProduct, deleteProductImage, getCategories, getUnits, getBrands, dtOptions } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
 
@@ -389,7 +390,17 @@ function Products() {
                       {/* Description */}
                       <div className="col-12 mb-3">
                         <label className="form-label small text-secondary">Description</label>
-                        <JoditEditor config={joditConfig} value={form.description} onBlur={content => setForm({ ...form, description: content })} />
+                        <Suspense fallback={
+                          <div className="border rounded p-2 text-muted small" style={{ minHeight: 80 }}>
+                            Loading editor...
+                          </div>
+                        }>
+                          <JoditEditor
+                            config={joditConfig}
+                            value={form.description}
+                            onBlur={content => setForm({ ...form, description: content })}
+                          />
+                        </Suspense>
                       </div>
 
                       {/* Flags */}

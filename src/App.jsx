@@ -28,6 +28,9 @@ import UserDetail from "./admin/pages/UserDetail"
 import AdminSizes from "./admin/pages/Sizes"
 import AdminBrands from "./admin/pages/Brands"
 import AdminUnits from "./admin/pages/Units"
+import ContactSetting from "./admin/pages/ContactSetting"
+import SocialMedia    from "./admin/pages/SocialMedia"
+import LogoSetting    from "./admin/pages/LogoSetting"
 /*------------------------*/
 
 function App() {
@@ -69,6 +72,10 @@ function App() {
         <Route path="/admin/sizes" element={<DashboardLayout><AdminSizes /></DashboardLayout>} />
         <Route path="/admin/brands" element={<DashboardLayout><AdminBrands /></DashboardLayout>} />
         <Route path="/admin/units" element={<DashboardLayout><AdminUnits /></DashboardLayout>} />
+
+        <Route path="/admin/settings/contact"      element={<DashboardLayout><ContactSetting /></DashboardLayout>} />
+        <Route path="/admin/settings/social-media" element={<DashboardLayout><SocialMedia /></DashboardLayout>} />
+        <Route path="/admin/settings/logo"         element={<DashboardLayout><LogoSetting /></DashboardLayout>} />
 
 
       </Routes>
