@@ -140,20 +140,18 @@ export const getAdminOrders = () => client("/admin/all-orders", { method: "POST"
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
-export const getContactSettings = () =>
-  client("/admin/settings/contact", { auth: true })
+export const getContactSettings = () => client("/admin/settings/contact", { auth: true })
+export const updateContactSettings = (data) => client("/admin/settings/contact", { method: "POST", auth: true, body: data })
+export const getSocialSettings = () => client("/admin/settings/social", { auth: true })
+export const updateSocialSettings = (data) => client("/admin/settings/social", { method: "POST", auth: true, body: data })
+export const getLogoSettings = () => client("/admin/settings/logo", { auth: true })
+export const updateLogoSettings = (formData) => formRequest("/admin/settings/logo", formData)
 
-export const updateContactSettings = (data) =>
-  client("/admin/settings/contact", { method: "POST", auth: true, body: data })
+// ─── Sliders ──────────────────────────────────────────────────────────────────
 
-export const getSocialSettings = () =>
-  client("/admin/settings/social", { auth: true })
-
-export const updateSocialSettings = (data) =>
-  client("/admin/settings/social", { method: "POST", auth: true, body: data })
-
-export const getLogoSettings = () =>
-  client("/admin/settings/logo", { auth: true })
-
-export const updateLogoSettings = (formData) =>
-  formRequest("/admin/settings/logo", formData)
+export const getSliders = () => client("/admin/sliders", { auth: true })
+export const getSlider = (id) => client(`/admin/sliders/${id}`, { auth: true })
+export const createSlider = (formData) => formRequest("/admin/sliders", formData)
+export const updateSlider = (id, formData) => formRequest(`/admin/sliders/${id}`, formData)
+export const deleteSlider = (id) => client(`/admin/sliders/${id}`, { method: "DELETE", auth: true })
+export const updateSliderStatus = (id, status) => client(`/admin/sliders/${id}/status`, { method: "POST", auth: true, body: { status } })

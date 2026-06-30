@@ -23,6 +23,7 @@ const NAV = [
       { to: "/admin/settings/contact",      icon: "fa-phone",        label: "Contact Setting" },
       { to: "/admin/settings/social-media", icon: "fa-share-nodes",  label: "Social Media" },
       { to: "/admin/settings/logo",         icon: "fa-image",        label: "Website Logo" },
+      { to: "/admin/sliders", icon: "fa-images", label: "Sliders" },
     ],
   },
   {

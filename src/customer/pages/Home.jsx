@@ -4,28 +4,32 @@ import ContactBanner from "../components/ContactBanner";
 import Newsletter from "../components/Newsletter";
 import FeatureIcons from "../components/FeatureIcons";
 import ProductCard from "../components/ProductCard";
-import { getWebsiteCategories, getBestSellers, getNewArrivals, getFeaturedProducts } from "../../utils/websiteApi";
+import { getWebsiteCategories, getBestSellers, getNewArrivals, getFeaturedProducts, getWebsiteSliders } from "../../utils/websiteApi";
 
 function Home() {
-  const [categories,   setCategories]   = useState([])
-  const [bestSellers,  setBestSellers]  = useState([])
-  const [newArrivals,  setNewArrivals]  = useState([])
-  const [featured,     setFeatured]     = useState([])
-  const [dataLoaded,   setDataLoaded]   = useState(false)
+  const [categories,  setCategories]  = useState([])
+  const [bestSellers, setBestSellers] = useState([])
+  const [newArrivals, setNewArrivals] = useState([])
+  const [featured,    setFeatured]    = useState([])
+  const [sliders,     setSliders]     = useState([])
+  const [dataLoaded,  setDataLoaded]  = useState(false)
 
+  // Saara data ek hi jagah fetch
   useEffect(() => {
     const load = async () => {
       try {
-        const [catRes, bsRes, naRes, ftRes] = await Promise.all([
+        const [catRes, bsRes, naRes, ftRes, sliderRes] = await Promise.all([
           getWebsiteCategories(),
           getBestSellers(),
           getNewArrivals(),
           getFeaturedProducts(),
+          getWebsiteSliders(),
         ])
         setCategories(catRes.data  || [])
         setBestSellers(bsRes.data  || [])
         setNewArrivals(naRes.data  || [])
         setFeatured(ftRes.data     || [])
+        setSliders(sliderRes.data  || [])
       } catch (e) {
         console.error("Home data load failed:", e)
       } finally {
@@ -35,6 +39,24 @@ function Home() {
     load()
   }, [])
 
+  // Bootstrap carousel — sliders load hone ke baad auto-start
+  useEffect(() => {
+    if (sliders.length === 0) return
+    const timer = setTimeout(() => {
+      const el = document.getElementById('carouselExampleIndicators')
+      if (el && window.bootstrap) {
+        const carousel = window.bootstrap.Carousel.getOrCreateInstance(el, {
+          interval: 3000,
+          ride: 'carousel',
+          wrap: true,
+        })
+        carousel.cycle()
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [sliders])
+
+  // Slick sliders — categories/products data load hone ke baad
   useEffect(() => {
     if (!dataLoaded) return
     const $ = window.$
@@ -111,8 +133,6 @@ function Home() {
     return () => clearTimeout(timer)
   }, [dataLoaded])
 
-
-
   const getPrice = (product) => {
     const v = product.variants?.[0]
     if (!v) return "—"
@@ -121,7 +141,6 @@ function Home() {
 
   const getImage = (product) =>
     product.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
-
 
   return (
     <main>
@@ -137,28 +156,33 @@ function Home() {
       `}</style>
 
       {/* Slider Main Start */}
-      <div id="carouselExampleIndicators" className="carousel slide" data-bs-ride="carousel">
-        <div className="carousel-indicators">
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-        </div>
-        <div className="carousel-inner">
-          <div className="carousel-item active">
-            <img src="assets/img/slider-1.png" className="d-block w-100" alt="image" />
+      {sliders.length > 0 && (
+        <div id="carouselExampleIndicators" className="carousel slide">
+          <div className="carousel-indicators">
+            {sliders.map((s, i) => (
+              <button key={s.id} type="button" data-bs-target="#carouselExampleIndicators"
+                data-bs-slide-to={i} className={i === 0 ? "active" : ""}
+                aria-current={i === 0 ? "true" : undefined} aria-label={`Slide ${i + 1}`}></button>
+            ))}
           </div>
-          <div className="carousel-item">
-            <img src="assets/img/slider-2.png" className="d-block w-100" alt="image" />
+          <div className="carousel-inner">
+            {sliders.map((s, i) => (
+              <div key={s.id} className={`carousel-item ${i === 0 ? "active" : ""}`}>
+                <img src={s.image_url || "assets/img/slider-1.png"} className="d-block w-100" alt={s.title || "slider"}
+                  onError={e => { e.target.onerror = null; e.target.src = "assets/img/slider-1.png" }} />
+              </div>
+            ))}
           </div>
+          <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span className="visually-hidden"><i className="icon-rt-arrow-left-solid"></i></span>
+          </button>
+          <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+            <span className="carousel-control-next-icon" aria-hidden="true"></span>
+            <span className="visually-hidden"><i className="icon-rt-arrow-right-solid"></i></span>
+          </button>
         </div>
-        <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-          <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span className="visually-hidden"><i class="icon-rt-arrow-left-solid"> </i></span>
-        </button>
-        <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-          <span className="carousel-control-next-icon" aria-hidden="true"></span>
-          <span className="visually-hidden"><i class="icon-rt-arrow-right-solid"> </i></span>
-        </button>
-      </div>
+      )}
       {/* Slider Main End */}
 
       {/* Popular Categories Start */}
@@ -209,7 +233,6 @@ function Home() {
       </section>
       {/* Popular Categories End */}
 
-
       {/* Best Sellers Section Start */}
       <section className="product-item-section best-sellers-sec">
         <div className="container">
@@ -239,7 +262,6 @@ function Home() {
         </div>
       </section>
       {/* Best Sellers Section End */}
-
 
       {/* Category Section Start */}
       <section className="category-section section-space-ptb-90">
