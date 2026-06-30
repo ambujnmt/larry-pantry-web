@@ -1,7 +1,31 @@
 // src/customer/components/Header.jsx
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { getWebsiteContact, getWebsiteSocial, getWebsiteLogo } from "../../utils/websiteApi";
 
 function Header() {
+  const [contact, setContact] = useState({ phone: "", email: "", address: "" })
+  const [social, setSocial]   = useState({ facebook: "", instagram: "", twitter: "", youtube: "", linkedin: "" })
+  const [logoUrl, setLogoUrl] = useState("/assets/img/logo.png")
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [contactRes, socialRes, logoRes] = await Promise.all([
+          getWebsiteContact(),
+          getWebsiteSocial(),
+          getWebsiteLogo(),
+        ])
+        setContact(contactRes.data || {})
+        setSocial(socialRes.data || {})
+        if (logoRes.data?.logo_url) setLogoUrl(logoRes.data.logo_url)
+      } catch (e) {
+        console.error("Header data load failed:", e)
+      }
+    }
+    load()
+  }, [])
+
   return (
     <header className="header">
 
@@ -21,15 +45,28 @@ function Header() {
               </div>
               <div className="col-lg-6 col-md-6">
                 <div className="header-top-right-area header-top-settings">
-                  <p className="header-top-text-message">
-                    <i className="icon-rt-call-outline"></i> Need help? Call Us:{" "}
-                    <a href="tel:0123456789">+91-0123456789</a>
-                  </p>
+                  {contact.phone && (
+                    <p className="header-top-text-message">
+                      <i className="icon-rt-call-outline"></i> Need help? Call Us:{" "}
+                      <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                    </p>
+                  )}
                   <ul className="nav align-items-center head-social-icon">
-                    <li><i className="fa fa-facebook"></i></li>
-                    <li><i className="fa fa-instagram"></i></li>
-                    <li><i className="fa fa-linkedin"></i></li>
-                    <li><i className="fa fa-youtube"></i></li>
+                    {social.facebook && (
+                      <li><a href={social.facebook} target="_blank" rel="noopener noreferrer"><i className="fa fa-facebook"></i></a></li>
+                    )}
+                    {social.instagram && (
+                      <li><a href={social.instagram} target="_blank" rel="noopener noreferrer"><i className="fa fa-instagram"></i></a></li>
+                    )}
+                    {social.linkedin && (
+                      <li><a href={social.linkedin} target="_blank" rel="noopener noreferrer"><i className="fa fa-linkedin"></i></a></li>
+                    )}
+                    {social.youtube && (
+                      <li><a href={social.youtube} target="_blank" rel="noopener noreferrer"><i className="fa fa-youtube"></i></a></li>
+                    )}
+                    {social.twitter && (
+                      <li><a href={social.twitter} target="_blank" rel="noopener noreferrer"><i className="fa fa-twitter"></i></a></li>
+                    )}
                   </ul>
                 </div>
               </div>
@@ -43,7 +80,7 @@ function Header() {
             <div className="row align-items-center">
               <div className="col-lg-3">
                 <div className="logo">
-                  <Link to="/"><img src="/assets/img/logo.png" alt="Larry Pantry Logo" /></Link>
+                  <Link to="/"><img src={logoUrl} alt="Logo" onError={e => { e.target.onerror = null; e.target.src = "/assets/img/logo.png" }} /></Link>
                 </div>
               </div>
               <div className="col-lg-6">
@@ -63,18 +100,6 @@ function Header() {
                       <i className="icon-rt-user"></i>
                     </Link>
                   </div>
-                  {/* <div className="wishlist">
-                    <a href="#" className="header-action-item">
-                      <i className="icon-rt-heart2"></i>
-                      <span className="wishlist-count">2</span>
-                    </a>
-                  </div>
-                  <div className="cart">
-                    <a href="#" className="header-action-item toolbar-btn">
-                      <i className="icon-rt-basket-outline"></i>
-                      <span className="wishlist-count">3</span>
-                    </a>
-                  </div> */}
                 </div>
               </div>
             </div>
@@ -125,7 +150,7 @@ function Header() {
             </div>
             <div className="col mobile-header-mobile">
               <div className="logo text-center">
-                <Link to="/"><img src="/assets/img/logo.png" alt="Larry Pantry Logo" /></Link>
+                <Link to="/"><img src={logoUrl} alt="Logo" onError={e => { e.target.onerror = null; e.target.src = "/assets/img/logo.png" }} /></Link>
               </div>
             </div>
             <div className="col mobile-header-right">

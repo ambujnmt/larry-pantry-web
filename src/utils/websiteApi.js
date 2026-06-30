@@ -1,3 +1,4 @@
+/*---- websiteApi.js ----*/
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 /*-- For Live --*/
@@ -28,3 +29,8 @@ export const getWebsiteCategories = ()      => post("/categories")
 export const getBestSellers       = (tab)   => post("/best-sellers", tab ? { tab } : null)
 export const getNewArrivals       = ()      => post("/new-arrivals")
 export const getFeaturedProducts  = ()      => post("/featured")
+
+export const getWebsiteContact  = () => post("/contact")
+export const getWebsiteSocial   = () => post("/social")
+export const getWebsiteLogo     = () => post("/logo")
+export const getWebsiteSliders  = () => post("/sliders")

@@ -1,3 +1,4 @@
+/*---- App.jsx ----*/
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./customer/components/Header";
 import Footer from "./customer/components/Footer";
@@ -31,6 +32,7 @@ import AdminUnits from "./admin/pages/Units"
 import ContactSetting from "./admin/pages/ContactSetting"
 import SocialMedia    from "./admin/pages/SocialMedia"
 import LogoSetting    from "./admin/pages/LogoSetting"
+import Sliders from "./admin/pages/Sliders"
 /*------------------------*/
 
 function App() {
@@ -76,6 +78,7 @@ function App() {
         <Route path="/admin/settings/contact"      element={<DashboardLayout><ContactSetting /></DashboardLayout>} />
         <Route path="/admin/settings/social-media" element={<DashboardLayout><SocialMedia /></DashboardLayout>} />
         <Route path="/admin/settings/logo"         element={<DashboardLayout><LogoSetting /></DashboardLayout>} />
+        <Route path="/admin/sliders" element={<DashboardLayout><Sliders /></DashboardLayout>} />
 
 
       </Routes>

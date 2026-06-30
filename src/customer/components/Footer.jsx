@@ -1,39 +1,71 @@
 // src/customer/components/Footer.jsx
+import { useState, useEffect } from "react";
+import { getWebsiteSocial, getWebsiteLogo } from "../../utils/websiteApi";
 
 function Footer() {
+  const [social, setSocial] = useState({ facebook: "", instagram: "", twitter: "", youtube: "", linkedin: "" })
+  const [logoUrl, setLogoUrl] = useState("/assets/img/logo.png")
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [socialRes, logoRes] = await Promise.all([
+          getWebsiteSocial(),
+          getWebsiteLogo(),
+        ])
+        setSocial(socialRes.data || {})
+        if (logoRes.data?.logo_url) setLogoUrl(logoRes.data.logo_url)
+      } catch (e) {
+        console.error("Footer data load failed:", e)
+      }
+    }
+    load()
+  }, [])
+
   return (
     <footer className="footer-section border-top">
-
       {/* Top Footer - Logo + Links */}
       <div className="footer-top-area pt-4 section-space-pb border-bottom">
         <div className="container">
           <div className="row">
-
             {/* Column 1 - Logo + Social */}
             <div className="col-lg-3 col-md-3 col-sm-6">
               <div className="footer-widget">
                 <div className="footer-logo">
                   <a href="#">
-                    <img src="/assets/img/logo.png" alt="Larry Pantry Logo" />
+                    <img src={logoUrl} alt="Logo"
+                      onError={e => { e.target.onerror = null; e.target.src = "/assets/img/logo.png" }} />
                   </a>
                 </div>
                 <ul className="footer-social-list">
-                  <li>
-                    <a href="#" className="facebook"><i className="fa fa-facebook"></i></a>
-                  </li>
-                  <li>
-                    <a href="#" className="instagram"><i className="icon-rt-logo-instagram"></i></a>
-                  </li>
-                  <li>
-                    <a href="#" className="twitter"><i className="fa fa-linkedin"></i></a>
-                  </li>
-                  <li>
-                    <a href="#" className="youtube"><i className="icon-rt-2-youtube2"></i></a>
-                  </li>
+                  {social.facebook && (
+                    <li>
+                      <a href={social.facebook} target="_blank" rel="noopener noreferrer" className="facebook"><i className="fa fa-facebook"></i></a>
+                    </li>
+                  )}
+                  {social.instagram && (
+                    <li>
+                      <a href={social.instagram} target="_blank" rel="noopener noreferrer" className="instagram"><i className="icon-rt-logo-instagram"></i></a>
+                    </li>
+                  )}
+                  {social.linkedin && (
+                    <li>
+                      <a href={social.linkedin} target="_blank" rel="noopener noreferrer" className="twitter"><i className="fa fa-linkedin"></i></a>
+                    </li>
+                  )}
+                  {social.youtube && (
+                    <li>
+                      <a href={social.youtube} target="_blank" rel="noopener noreferrer" className="youtube"><i className="icon-rt-2-youtube2"></i></a>
+                    </li>
+                  )}
+                  {social.twitter && (
+                    <li>
+                      <a href={social.twitter} target="_blank" rel="noopener noreferrer" className="twitter"><i className="fa fa-twitter"></i></a>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
-
             {/* Column 2 - Information */}
             <div className="col-lg-3 col-md-3 col-sm-6 col-6">
               <div className="footer-widget">
@@ -47,7 +79,6 @@ function Footer() {
                 </ul>
               </div>
             </div>
-
             {/* Column 3 - Quick Links */}
             <div className="col-lg-3 col-md-3 col-sm-6 col-6">
               <div className="footer-widget">
@@ -62,7 +93,6 @@ function Footer() {
                 </ul>
               </div>
             </div>
-
             {/* Column 4 - My Account */}
             <div className="col-lg-3 col-md-3 col-sm-6 col-6">
               <div className="footer-widget">
@@ -73,11 +103,9 @@ function Footer() {
                 </ul>
               </div>
             </div>
-
           </div>
         </div>
       </div>
-
       {/* Bottom Footer - Copyright */}
       <div className="footer-bottom">
         <div className="container">
@@ -89,7 +117,6 @@ function Footer() {
           </div>
         </div>
       </div>
-
     </footer>
   );
 }

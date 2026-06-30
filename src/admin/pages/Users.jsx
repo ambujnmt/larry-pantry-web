@@ -12,10 +12,11 @@ import AdminPageHeader from "../../admin/components/AdminPageHeader"
 DataTable.use(DT)
 
 const STATUS_MAP = {
-  0: ['Inactive',  'secondary'],
-  1: ['Active',    'success'],
-  2: ['Blocked',   'danger'],
+  0: ['Pending', 'secondary'],
+  1: ['Active', 'success'],
+  2: ['Deactivated', 'danger'],
   3: ['Suspended', 'warning'],
+  4: ['Deleted', 'dark'],
 }
 
 const fmtDate = (str) => {
@@ -405,8 +406,7 @@ function Users() {
                           onChange={e => handleStatusChange(u.id, parseInt(e.target.value))}
                         >
                           <option value={1}>Active</option>
-                          <option value={0}>Inactive</option>
-                          <option value={2}>Blocked</option>
+                          <option value={2}>Deactivated</option>
                           <option value={3}>Suspended</option>
                         </select>
                         <span className={`badge bg-${color}`}>{label}</span>
