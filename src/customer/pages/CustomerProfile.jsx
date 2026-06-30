@@ -45,9 +45,28 @@ const css = `
     border-bottom-right-radius: 10px !important;
     background: #f8fafc !important;
   }
+  .cp-tabs {
+    display: flex; gap: 4px; background: #f1f5f9; padding: 4px;
+    border-radius: 12px; width: fit-content; margin-bottom: 20px;
+  }
+  .cp-tab {
+    border: none; background: transparent; padding: 9px 22px;
+    border-radius: 9px; font-size: 13.5px; font-weight: 600;
+    color: #64748b; cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .cp-tab.active {
+    background: #0e606c; color: #fff;
+    box-shadow: 0 2px 6px rgba(14,96,108,.25);
+  }
+  .cp-tab:not(.active):hover {
+    background: rgba(14,96,108,.06); color: #0e606c;
+  }
 `
 
 function CustomerProfile() {
+  const [activeTab, setActiveTab] = useState("profile") // "profile" | "password"
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState(false)
   const [success, setSuccess] = useState("")
@@ -82,11 +101,25 @@ function CustomerProfile() {
   const [passError, setPassError] = useState("")
   /*------------------------*/
 
+  const [organizationType, setOrganizationType] = useState("")
+  const [storeAddress, setStoreAddress]         = useState("")
+
+  const DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
+  const defaultHours = DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: "", close: "", closed: false } }), {})
+  const [workingHours, setWorkingHours] = useState(defaultHours)
+
+  const updateHour = (day, field, value) => {
+    setWorkingHours(prev => ({ ...prev, [day]: { ...prev[day], [field]: value } }))
+  }
+
   const fillForm = (u) => {
     setFirstName(u.first_name || "")
     setLastName(u.last_name   || "")
     setEmail(u.email          || "")
     setMobile(u.mobile        || "")
+    setOrganizationType(u.organization_type || "")
+    setStoreAddress(u.store_address || "")
+    if (u.working_hours) setWorkingHours({ ...defaultHours, ...u.working_hours })
     if (u.address)   { setAddressInput(u.address); setAddressLocked(true) }
     if (u.latitude)  setLat(String(u.latitude))
     if (u.longitude) setLng(String(u.longitude))
@@ -143,10 +176,10 @@ function CustomerProfile() {
   const handleSave = async (e) => {
     e.preventDefault()
     setSuccess(""); setError("")
-    if (addressInput && !addressLocked) {
+    /*if (addressInput && !addressLocked) {
       setError("Please select an address from the suggestions.")
       return
-    }
+    }*/
     setSaving(true)
     try {
       const fd = new FormData()
@@ -154,13 +187,16 @@ function CustomerProfile() {
       fd.append("last_name",  lastName)
       fd.append("email",      email)
       fd.append("mobile",     mobile)
+      fd.append("organization_type", organizationType)
+      fd.append("store_address", storeAddress)
+      fd.append("working_hours", JSON.stringify(workingHours))
       if (addressInput) fd.append("address",   addressInput)
       if (lat)          fd.append("latitude",  lat)
       if (lng)          fd.append("longitude", lng)
 
       const res    = await updateProfile(fd)
       const updated = res?.data ?? res
-      const merged  = { first_name: firstName, last_name: lastName, email, mobile, address: addressInput, latitude: lat, longitude: lng, ...updated }
+      const merged  = { first_name: firstName, last_name: lastName, email, mobile, organization_type: organizationType, store_address: storeAddress, working_hours: workingHours, address: addressInput, latitude: lat, longitude: lng, ...updated }
       localStorage.setItem("customer_user", JSON.stringify(merged))
       setSuccess("Profile updated successfully!")
     } catch (err) {
@@ -219,36 +255,42 @@ function CustomerProfile() {
           </div>
         </div>
       ) : (
-        /* ─── Main Row Container ─── */
-        <div className="row g-4">
-          
-          <div className="col-md-12">
-            {/* Avatar + Name banner */}
-              <div className="app-card shadow-sm mb-3" style={{ borderRadius: 14, overflow: "hidden" }}>
-                <div style={{ background: "linear-gradient(135deg, #0e606c 0%, #0a8a78 100%)", padding: "8px 14px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-                    <div className="cp-avatar">{initials}</div>
-                    <div>
-                      <div style={{ color: "#fff", fontWeight: 700, fontSize: 18, lineHeight: 1.3 }}>
-                        {[firstName, lastName].filter(Boolean).join(" ") || "Your Name"}
-                      </div>
-                      <div style={{ color: "rgba(255,255,255,.65)", fontSize: 13, marginTop: 3 }}>
-                        {email || "your@email.com"}
-                      </div>
-                    </div>
+        <>
+          {/* Avatar + Name banner */}
+          <div className="app-card shadow-sm mb-3" style={{ borderRadius: 14, overflow: "hidden" }}>
+            <div style={{ background: "linear-gradient(135deg, #0e606c 0%, #0a8a78 100%)", padding: "8px 14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                <div className="cp-avatar">{initials}</div>
+                <div>
+                  <div style={{ color: "#fff", fontWeight: 700, fontSize: 18, lineHeight: 1.3 }}>
+                    {[firstName, lastName].filter(Boolean).join(" ") || "Your Name"}
+                  </div>
+                  <div style={{ color: "rgba(255,255,255,.65)", fontSize: 13, marginTop: 3 }}>
+                    {email || "your@email.com"}
                   </div>
                 </div>
               </div>
+            </div>
           </div>
-          {/* ─── LEFT COLUMN: Profile Details Form (col-md-6) ─── */}
-          <div className="col-md-6">
+
+          {/* Tabs */}
+          <div className="cp-tabs">
+            <button className={`cp-tab ${activeTab === "profile" ? "active" : ""}`} onClick={() => setActiveTab("profile")}>
+              <i className="fa-solid fa-id-card" /> Profile Settings
+            </button>
+            <button className={`cp-tab ${activeTab === "password" ? "active" : ""}`} onClick={() => setActiveTab("password")}>
+              <i className="fa-solid fa-lock" /> Change Password
+            </button>
+          </div>
+
+          {/* ═══════════ TAB: PROFILE SETTINGS ═══════════ */}
+          {activeTab === "profile" && (
             <form onSubmit={handleSave}>
-              
+
               {/* Personal Info Card */}
               <div className="app-card shadow-sm mb-3" style={{ borderRadius: 14 }}>
                 <div className="app-card-body p-4">
 
-                  {/* Profile Alerts */}
                   {success && (
                     <div className="alert alert-success d-flex align-items-center gap-2 py-2 mb-3">
                       <i className="fa fa-check-circle" /><small>{success}</small>
@@ -358,7 +400,6 @@ function CustomerProfile() {
                       </span>
                     </div>
 
-                    {/* Dropdown */}
                     {suggestions.length > 0 && (
                       <div style={{
                         position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 999,
@@ -392,8 +433,7 @@ function CustomerProfile() {
                       </div>
                     )}
 
-                    {/* Lat / Lng pill */}
-                    {lat && lng && (
+                    {/*{lat && lng && (
                       <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                         <span style={{
                           display: "inline-flex", alignItems: "center", gap: 5,
@@ -412,12 +452,62 @@ function CustomerProfile() {
                           Lng: {parseFloat(lng).toFixed(6)}
                         </span>
                       </div>
-                    )}
+                    )}*/}
                   </div>
                 </div>
               </div>
 
-              {/* Save Button */}
+              {/* Business Info Card */}
+              <div className="app-card shadow-sm mb-3" style={{ borderRadius: 14 }}>
+                <div className="app-card-body p-4">
+                  <div className="cp-section-title">
+                    <i className="fa-solid fa-building" style={{ color: "#0e606c" }} />
+                    Business Information
+                  </div>
+
+                  <div className="row g-3 mb-3">
+                    <div className="col-sm-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>Organization Type</label>
+                      <select className="form-select" style={{ fontSize: 13.5, height: 42, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc" }}
+                        value={organizationType} onChange={e => setOrganizationType(e.target.value)}>
+                        <option value="">Select type</option>
+                        <option value="Restaurant">Restaurant</option>
+                        <option value="Caterer">Caterer</option>
+                        <option value="School">School</option>
+                        <option value="Assisted Living">Assisted Living</option>
+                        <option value="Family/Personal">Family / Personal</option>
+                      </select>
+                    </div>
+                    <div className="col-sm-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>Store Address</label>
+                      <div className="cp-input-wrap">
+                        <i className="fa-solid fa-store cp-icon" />
+                        <input type="text" className="form-control" placeholder="Store address"
+                          value={storeAddress} onChange={e => setStoreAddress(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <label className="form-label fw-semibold d-block mb-2" style={{ fontSize: 12.5, color: "#374151" }}>Working Hours</label>
+                  {DAYS.map(day => (
+                    <div key={day} className="d-flex align-items-center gap-2 mb-2">
+                      <div style={{ width: 90, fontSize: 12.5, textTransform: 'capitalize', color: "#374151" }}>{day}</div>
+                      <div className="form-check mb-0">
+                        <input type="checkbox" className="form-check-input" checked={!workingHours[day]?.closed}
+                          onChange={e => updateHour(day, 'closed', !e.target.checked)} />
+                      </div>
+                      <input type="time" className="form-control form-control-sm" style={{ width: 110 }}
+                        value={workingHours[day]?.open || ""} disabled={workingHours[day]?.closed}
+                        onChange={e => updateHour(day, 'open', e.target.value)} />
+                      <span className="text-muted small">to</span>
+                      <input type="time" className="form-control form-control-sm" style={{ width: 110 }}
+                        value={workingHours[day]?.close || ""} disabled={workingHours[day]?.closed}
+                        onChange={e => updateHour(day, 'close', e.target.value)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="d-flex justify-content-end mb-4">
                 <button type="submit" className="btn text-white fw-semibold px-4"
                   style={{ background: "#0e606c", borderRadius: 10, fontSize: 14, height: 42 }}
@@ -429,114 +519,116 @@ function CustomerProfile() {
                 </button>
               </div>
             </form>
-          </div>
+          )}
 
-          {/* ─── RIGHT COLUMN: Change Password Form (col-md-6) ─── */}
-          <div className="col-md-6">
-            <div className="app-card shadow-sm" style={{ borderRadius: 14 }}>
-              <div className="app-card-body p-4">
-                {/* Password Alerts */}
-                {passSuccess && (
-                  <div className="alert alert-success d-flex align-items-center gap-2 py-2 mb-3">
-                    <i className="fa fa-check-circle" /><small>{passSuccess}</small>
-                  </div>
-                )}
-                {passError && (
-                  <div className="alert alert-danger d-flex align-items-center gap-2 py-2 mb-3">
-                    <i className="fa fa-exclamation-circle" /><small>{passError}</small>
-                  </div>
-                )}
+          {/* ═══════════ TAB: CHANGE PASSWORD ═══════════ */}
+          {activeTab === "password" && (
+            <div className="row">
+              <div className="col-md-6">
+                <div className="app-card shadow-sm" style={{ borderRadius: 14 }}>
+                  <div className="app-card-body p-4">
+                    {passSuccess && (
+                      <div className="alert alert-success d-flex align-items-center gap-2 py-2 mb-3">
+                        <i className="fa fa-check-circle" /><small>{passSuccess}</small>
+                      </div>
+                    )}
+                    {passError && (
+                      <div className="alert alert-danger d-flex align-items-center gap-2 py-2 mb-3">
+                        <i className="fa fa-exclamation-circle" /><small>{passError}</small>
+                      </div>
+                    )}
 
-                <div className="cp-section-title">
-                  <i className="fa-solid fa-lock" style={{ color: "#0e606c" }} />
-                  Change Password
+                    <div className="cp-section-title">
+                      <i className="fa-solid fa-lock" style={{ color: "#0e606c" }} />
+                      Update Your Password
+                    </div>
+
+                    <form onSubmit={handlePasswordSubmit}>
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>Current Password</label>
+                        <div className="input-group cp-input-wrap">
+                          <i className="fa-solid fa-lock cp-icon" />
+                          <input
+                            type={showOld ? "text" : "password"}
+                            className="form-control"
+                            value={oldPass}
+                            onChange={(e) => setOldPass(e.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary cp-password-toggle"
+                            onClick={() => setShowOld(!showOld)}
+                          >
+                            <i className={`fa ${showOld ? "fa-eye-slash" : "fa-eye"}`}></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>New Password</label>
+                        <div className="input-group cp-input-wrap">
+                          <i className="fa-solid fa-key cp-icon" />
+                          <input
+                            type={showNew ? "text" : "password"}
+                            className="form-control"
+                            value={newPass}
+                            onChange={(e) => setNewPass(e.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary cp-password-toggle"
+                            onClick={() => setShowNew(!showNew)}
+                          >
+                            <i className={`fa ${showNew ? "fa-eye-slash" : "fa-eye"}`}></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>Confirm Password</label>
+                        <div className="input-group cp-input-wrap">
+                          <i className="fa-solid fa-shield cp-icon" />
+                          <input
+                            type={showConfirm ? "text" : "password"}
+                            className="form-control"
+                            value={confirmPass}
+                            onChange={(e) => setConfirmPass(e.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary cp-password-toggle"
+                            onClick={() => setShowConfirm(!showConfirm)}
+                          >
+                            <i className={`fa ${showConfirm ? "fa-eye-slash" : "fa-eye"}`}></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="d-flex justify-content-end">
+                        <button
+                          type="submit"
+                          className="btn text-white fw-semibold px-4"
+                          style={{
+                            background: "#0e606c",
+                            borderRadius: 10,
+                            height: 42,
+                            fontSize: 14,
+                          }}
+                          disabled={passLoading}
+                        >
+                          {passLoading ? <><span className="spinner-border spinner-border-sm me-2" />Updating...</> : "Change Password"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-
-                <form onSubmit={handlePasswordSubmit}>
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>Current Password</label>
-                    <div className="input-group cp-input-wrap">
-                      <i className="fa-solid fa-lock cp-icon" />
-                      <input
-                        type={showOld ? "text" : "password"}
-                        className="form-control"
-                        value={oldPass}
-                        onChange={(e) => setOldPass(e.target.value)}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary cp-password-toggle"
-                        onClick={() => setShowOld(!showOld)}
-                      >
-                        <i className={`fa ${showOld ? "fa-eye-slash" : "fa-eye"}`}></i>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>New Password</label>
-                    <div className="input-group cp-input-wrap">
-                      <i className="fa-solid fa-key cp-icon" />
-                      <input
-                        type={showNew ? "text" : "password"}
-                        className="form-control"
-                        value={newPass}
-                        onChange={(e) => setNewPass(e.target.value)}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary cp-password-toggle"
-                        onClick={() => setShowNew(!showNew)}
-                      >
-                        <i className={`fa ${showNew ? "fa-eye-slash" : "fa-eye"}`}></i>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>Confirm Password</label>
-                    <div className="input-group cp-input-wrap">
-                      <i className="fa-solid fa-shield cp-icon" />
-                      <input
-                        type={showConfirm ? "text" : "password"}
-                        className="form-control"
-                        value={confirmPass}
-                        onChange={(e) => setConfirmPass(e.target.value)}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary cp-password-toggle"
-                        onClick={() => setShowConfirm(!showConfirm)}
-                      >
-                        <i className={`fa ${showConfirm ? "fa-eye-slash" : "fa-eye"}`}></i>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="d-flex justify-content-end mb-4">
-                    <button
-                      type="submit"
-                      className="btn text-white fw-semibold px-4"
-                      style={{
-                        background: "#0e606c",
-                        borderRadius: 10,
-                        height: 42,
-                        fontSize: 14,
-                      }}
-                      disabled={passLoading}
-                    >
-                      {passLoading ? <><span className="spinner-border spinner-border-sm me-2" />Updating...</> : "Change Password"}
-                    </button>
-                  </div>
-                </form>
               </div>
             </div>
-          </div>
-
-        </div> /* ─── End Row Container ─── */
+          )}
+        </>
       )}
     </>
   )
