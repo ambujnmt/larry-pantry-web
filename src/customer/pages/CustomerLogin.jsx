@@ -22,6 +22,8 @@ const css = `
   .cl-btn { height:48px; background:#0e606c; border:none; border-radius:10px; font-size:14.5px; font-weight:600; font-family:'DM Sans',sans-serif; letter-spacing:.025em; transition:background .15s; }
   .cl-btn:hover { background:#0a4f59; }
   .cl-btn:disabled { background:#a0c4c8; }
+  .cl-btn-outline { height:48px; background:#fff; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14.5px; font-weight:600; color:#374151; transition:all .15s; }
+  .cl-btn-outline:hover { background:#f8fafc; border-color:#0e606c; color:#0e606c; }
   .cl-link { color:#0e8a78; font-weight:500; font-size:13px; text-decoration:none; background:none; border:none; padding:0; cursor:pointer; font-family:'DM Sans',sans-serif; }
   .cl-link:hover { text-decoration:underline; }
   .cl-tab { cursor:pointer; padding:8px 20px; border-radius:8px; font-weight:600; font-size:14px; transition:all .15s; border:none; background:transparent; }
@@ -34,6 +36,7 @@ const css = `
   .step-dot { width:8px; height:8px; border-radius:50%; background:#e2e8f0; transition:background .2s; }
   .step-dot.active { background:#0e606c; }
   .step-dot.done { background:#0e8a78; }
+  .reg-step-label { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; margin-bottom:4px; }
 `
 
 function CustomerLogin() {
@@ -52,6 +55,7 @@ function CustomerLogin() {
   const [first_name, setFirstName]            = useState("")
   const [last_name, setLastName]              = useState("")
   const [mobile, setMobile]                   = useState("")
+  const [regStep, setRegStep]                 = useState(1) // 1, 2, 3
 
   // Register OTP
   const [otpDigits, setOtpDigits]           = useState(["","","","","",""])
@@ -93,6 +97,7 @@ function CustomerLogin() {
     setResetStep(1); setResetEmail("")
     setResetOtpDigits(["","","","","",""])
     setNewPassword(""); setConfirmNewPassword("")
+    setRegStep(1)
   }
 
   const saveAuth = (data) => {
@@ -102,7 +107,6 @@ function CustomerLogin() {
     localStorage.setItem("customer_user", JSON.stringify(user))
   }
 
-  // Generic OTP box handlers
   // Generic OTP box handlers
   const makeOtpHandlers = (digits, setDigits, refs) => ({
     onChange: (index, value) => {
@@ -155,6 +159,17 @@ function CustomerLogin() {
   const regOtp   = makeOtpHandlers(otpDigits, setOtpDigits, otpRefs)
   const resetOtp = makeOtpHandlers(resetOtpDigits, setResetOtpDigits, resetOtpRefs)
 
+  const [organizationType, setOrganizationType] = useState("")
+  const [storeAddress, setStoreAddress]         = useState("")
+
+  const DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
+  const defaultHours = DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: "", close: "", closed: false } }), {})
+  const [workingHours, setWorkingHours] = useState(defaultHours)
+
+  const updateHour = (day, field, value) => {
+    setWorkingHours(prev => ({ ...prev, [day]: { ...prev[day], [field]: value } }))
+  }
+
   // ── LOGIN ──
   const handleLogin = async (e) => {
     e.preventDefault(); setError(""); setLoading(true)
@@ -165,13 +180,43 @@ function CustomerLogin() {
     finally { setLoading(false) }
   }
 
-  // ── REGISTER ──
+  // ── REGISTER STEP VALIDATION ──
+  const validateStep1 = () => {
+    if (!first_name.trim()) { setError("First name is required."); return false }
+    if (!email.trim())      { setError("Email is required."); return false }
+    return true
+  }
+
+  const validateStep2 = () => {
+    if (!organizationType)    { setError("Please select your organization type."); return false }
+    if (!storeAddress.trim()) { setError("Please enter your store address."); return false }
+    return true
+  }
+
+  const goToStep = (step) => {
+    setError("")
+    if (step === 2 && !validateStep1()) return
+    if (step === 3 && !validateStep2()) return
+    setRegStep(step)
+  }
+
+  // ── REGISTER SUBMIT (Step 3) ──
   const handleRegister = async (e) => {
     e.preventDefault()
+
+    if (!password)               { setError("Password is required."); return }
+    if (!confirmPassword)        { setError("Please confirm your password."); return }
     if (password !== confirmPassword) { setError("Passwords do not match."); return }
+
     setError(""); setLoading(true)
     try {
-      await customerRegister({ first_name, last_name, email, password, password_confirmation: confirmPassword, mobile })
+      await customerRegister({
+        first_name, last_name, email, password,
+        password_confirmation: confirmPassword, mobile,
+        organization_type: organizationType,
+        store_address: storeAddress,
+        working_hours: workingHours,
+      })
       setOtpEmail(email); setOtpDigits(["","","","","",""]); setResendCooldown(60); setTab("otp")
     } catch (err) { setError(err.message || "Registration failed.") }
     finally { setLoading(false) }
@@ -206,7 +251,6 @@ function CustomerLogin() {
   // RESET PASSWORD — 3 STEPS
   // ══════════════════════════════════
 
-  // Step 1: Email → OTP bhejo
   const handleResetSendOtp = async (e) => {
     e.preventDefault(); setError(""); setLoading(true)
     try {
@@ -216,7 +260,6 @@ function CustomerLogin() {
     finally { setLoading(false) }
   }
 
-  // Step 2: OTP verify
   const handleResetVerifyOtp = async (e) => {
     e.preventDefault()
     const otp = resetOtpDigits.join("")
@@ -241,14 +284,12 @@ function CustomerLogin() {
     finally { setLoading(false) }
   }
 
-  // Step 3: Naya password
   const handleResetNewPassword = async (e) => {
     e.preventDefault()
     if (newPassword !== confirmNewPassword) { setError("Passwords do not match."); return }
     setError(""); setLoading(true)
     try {
       const otp = resetOtpDigits.join("")
-      // backend: POST /create-new-password  { email, otp, password }
       await customerResetPassword(resetEmail, null, newPassword, confirmNewPassword, otp)
       setSuccess("Password updated successfully. Please login with your new password.")
       setTimeout(() => {
@@ -270,6 +311,8 @@ function CustomerLogin() {
       ))}
     </div>
   )
+
+  const regStepLabels = ["Account Info", "Business Info", "Security"]
 
   return (
     <>
@@ -298,7 +341,7 @@ function CustomerLogin() {
           <div className="cl-grid" /><div className="cl-c1" /><div className="cl-c2" /><div className="cl-fade" />
 
           <div style={{width:'100%', margin:'0 auto', padding:20, background:'#ffffff', position:'relative', zIndex:2}}>
-            <div style={{maxWidth:440, width:'100%', margin:'0 auto'}}>
+            <div style={{width:'90%', margin:'0 auto'}}>
 
               <p className="cl-eyebrow mb-3">Customer Portal</p>
 
@@ -361,60 +404,152 @@ function CustomerLogin() {
                 </>
               )}
 
-              {/* ════ REGISTER ════ */}
+              {/* ════ REGISTER — 3 STEP WIZARD ════ */}
               {tab === "register" && (
                 <>
-                  <p className="text-secondary mb-4" style={{fontSize:14}}>Create your account — it's free!</p>
-                  <form onSubmit={handleRegister} noValidate>
-                    <div className="mb-3">
-                      <label className="form-label small text-secondary">First Name</label>
-                      <div className="position-relative">
-                        <span className="cl-icon"><i className="fa fa-user" /></span>
-                        <input type="text" className="form-control cl-input" placeholder="Enter first name" value={first_name} onChange={e => setFirstName(e.target.value)} required />
+                  {/* Step indicator */}
+                  <div className="mb-4">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <span className="reg-step-label">Step {regStep} of 3 — {regStepLabels[regStep - 1]}</span>
+                      <div className="d-flex gap-2">
+                        {[1,2,3].map(s => (
+                          <div key={s} className={`step-dot ${s < regStep ? "done" : s === regStep ? "active" : ""}`} />
+                        ))}
                       </div>
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label small text-secondary">Last Name</label>
-                      <div className="position-relative">
-                        <span className="cl-icon"><i className="fa fa-user" /></span>
-                        <input type="text" className="form-control cl-input" placeholder="Enter last name" value={last_name} onChange={e => setLastName(e.target.value)} />
+                  </div>
+
+                  {/* ─── STEP 1: Account Info ─── */}
+                  {regStep === 1 && (
+                    <>
+                      <p className="text-secondary mb-4" style={{fontSize:14}}>Let's start with your basic details</p>
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">First Name</label>
+                        <div className="position-relative">
+                          <span className="cl-icon"><i className="fa fa-user" /></span>
+                          <input type="text" className="form-control cl-input" placeholder="Enter first name" value={first_name} onChange={e => setFirstName(e.target.value)} required />
+                        </div>
                       </div>
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label small text-secondary">Email Address</label>
-                      <div className="position-relative">
-                        <span className="cl-icon"><i className="fa fa-envelope" /></span>
-                        <input type="email" className="form-control cl-input" placeholder="Enter your email ID" value={email} onChange={e => setEmail(e.target.value)} required />
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">Last Name</label>
+                        <div className="position-relative">
+                          <span className="cl-icon"><i className="fa fa-user" /></span>
+                          <input type="text" className="form-control cl-input" placeholder="Enter last name" value={last_name} onChange={e => setLastName(e.target.value)} />
+                        </div>
                       </div>
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label small text-secondary">Phone Number</label>
-                      <div className="position-relative">
-                        <span className="cl-icon"><i className="fa fa-phone" /></span>
-                        <input type="tel" className="form-control cl-input" placeholder="Enter your phone no." value={mobile} onChange={e => setMobile(e.target.value)} />
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">Email Address</label>
+                        <div className="position-relative">
+                          <span className="cl-icon"><i className="fa fa-envelope" /></span>
+                          <input type="email" className="form-control cl-input" placeholder="Enter your email ID" value={email} onChange={e => setEmail(e.target.value)} required />
+                        </div>
                       </div>
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label small text-secondary">Password</label>
-                      <div className="position-relative">
-                        <span className="cl-icon"><i className="fa fa-lock" /></span>
-                        <input type={showPass ? "text" : "password"} className="form-control cl-input" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} style={{paddingRight:40}} required />
-                        <button type="button" className="cl-toggle" onClick={() => setShowPass(v => !v)}>
-                          <i className={`fa ${showPass ? "fa-eye-slash" : "fa-eye"}`} />
+                      <div className="mb-4">
+                        <label className="form-label small text-secondary">Phone Number</label>
+                        <div className="position-relative">
+                          <span className="cl-icon"><i className="fa fa-phone" /></span>
+                          <input type="tel" className="form-control cl-input" placeholder="Enter your phone no." value={mobile} onChange={e => setMobile(e.target.value)} />
+                        </div>
+                      </div>
+                      <button type="button" className="btn text-white w-100 cl-btn" onClick={() => goToStep(2)}>
+                        Next: Business Info <i className="fa fa-arrow-right ms-2" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* ─── STEP 2: Business Info ─── */}
+                  {regStep === 2 && (
+                    <>
+                      <p className="text-secondary mb-4" style={{fontSize:14}}>Tell us about your business</p>
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">Organization Type</label>
+                        <select className="form-control cl-input" value={organizationType}
+                          onChange={e => setOrganizationType(e.target.value)} required>
+                          <option value="">Select organization type</option>
+                          <option value="Restaurant">Restaurant</option>
+                          <option value="Caterer">Caterer</option>
+                          <option value="School">School</option>
+                          <option value="Assisted Living">Assisted Living</option>
+                          <option value="Family/Personal">Family / Personal</option>
+                        </select>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label small text-secondary">Store Address</label>
+                        <div className="position-relative">
+                          <span className="cl-icon"><i className="fa fa-map-marker" /></span>
+                          <input type="text" className="form-control cl-input" placeholder="Enter store address"
+                            value={storeAddress} onChange={e => setStoreAddress(e.target.value)} required />
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="form-label small text-secondary d-block mb-2">Working Hours</label>
+                        <div style={{ maxHeight: 220, overflowY: 'auto', paddingRight: 4 }}>
+                          {DAYS.map(day => (
+                            <div key={day} className="d-flex align-items-center gap-2 mb-2">
+                              <div style={{ width: 80, fontSize: 12.5, textTransform: 'capitalize' }}>{day}</div>
+                              <div className="form-check mb-0">
+                                <input type="checkbox" className="form-check-input" checked={!workingHours[day].closed}
+                                  onChange={e => updateHour(day, 'closed', !e.target.checked)} />
+                              </div>
+                              <input type="time" className="form-control form-control-sm" style={{ width: 100 }}
+                                value={workingHours[day].open} disabled={workingHours[day].closed}
+                                onChange={e => updateHour(day, 'open', e.target.value)} />
+                              <span className="text-muted small">to</span>
+                              <input type="time" className="form-control form-control-sm" style={{ width: 100 }}
+                                value={workingHours[day].close} disabled={workingHours[day].closed}
+                                onChange={e => updateHour(day, 'close', e.target.value)} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="d-flex gap-2">
+                        <button type="button" className="cl-btn-outline flex-grow-1" onClick={() => setRegStep(1)}>
+                          <i className="fa fa-arrow-left me-2" />Back
+                        </button>
+                        <button type="button" className="btn text-white cl-btn flex-grow-1" onClick={() => goToStep(3)}>
+                          Next: Security <i className="fa fa-arrow-right ms-2" />
                         </button>
                       </div>
-                    </div>
-                    <div className="mb-4">
-                      <label className="form-label small text-secondary">Confirm Password</label>
-                      <div className="position-relative">
-                        <span className="cl-icon"><i className="fa fa-lock" /></span>
-                        <input type={showPass ? "text" : "password"} className="form-control cl-input" placeholder="Re-enter your password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} style={{paddingRight:40}} required />
-                      </div>
-                    </div>
-                    <button type="submit" className="btn text-white w-100 cl-btn" disabled={loading}>
-                      {loading ? <><span className="spinner-border spinner-border-sm me-2" />Creating account...</> : <><i className="fa fa-user-plus me-2" />Create Account</>}
-                    </button>
-                  </form>
+                    </>
+                  )}
+
+                  {/* ─── STEP 3: Security ─── */}
+                  {regStep === 3 && (
+                    <>
+                      <p className="text-secondary mb-4" style={{fontSize:14}}>Finally, set a password for your account</p>
+                      <form onSubmit={handleRegister} noValidate>
+                        <div className="mb-3">
+                          <label className="form-label small text-secondary">Password</label>
+                          <div className="position-relative">
+                            <span className="cl-icon"><i className="fa fa-lock" /></span>
+                            <input type={showPass ? "text" : "password"} className="form-control cl-input" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} style={{paddingRight:40}} required />
+                            <button type="button" className="cl-toggle" onClick={() => setShowPass(v => !v)}>
+                              <i className={`fa ${showPass ? "fa-eye-slash" : "fa-eye"}`} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mb-4">
+                          <label className="form-label small text-secondary">Confirm Password</label>
+                          <div className="position-relative">
+                            <span className="cl-icon"><i className="fa fa-lock" /></span>
+                            <input type={showPass ? "text" : "password"} className="form-control cl-input" placeholder="Re-enter your password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} style={{paddingRight:40}} required />
+                          </div>
+                        </div>
+
+                        <div className="d-flex gap-2">
+                          <button type="button" className="cl-btn-outline flex-grow-1" onClick={() => setRegStep(2)} disabled={loading}>
+                            <i className="fa fa-arrow-left me-2" />Back
+                          </button>
+                          <button type="submit" className="btn text-white cl-btn flex-grow-1" disabled={loading}>
+                            {loading ? <><span className="spinner-border spinner-border-sm me-2" />Creating...</> : <><i className="fa fa-user-plus me-2" />Create Account</>}
+                          </button>
+                        </div>
+                      </form>
+                    </>
+                  )}
                 </>
               )}
 
@@ -453,7 +588,6 @@ function CustomerLogin() {
               ════════════════════════════════ */}
               {tab === "reset" && (
                 <>
-                  {/* Back + step dots */}
                   <div className="d-flex align-items-center gap-2 mb-4">
                     <button type="button" className="cl-link d-flex align-items-center gap-1" onClick={() => {
                       setError("")
@@ -470,7 +604,6 @@ function CustomerLogin() {
                     </div>
                   </div>
 
-                  {/* Step 1 — Email */}
                   {resetStep === 1 && (
                     <>
                       <div className="d-flex justify-content-center mb-3">
@@ -498,7 +631,6 @@ function CustomerLogin() {
                     </>
                   )}
 
-                  {/* Step 2 — OTP */}
                   {resetStep === 2 && (
                     <>
                       <div className="d-flex justify-content-center mb-3">
@@ -525,7 +657,6 @@ function CustomerLogin() {
                     </>
                   )}
 
-                  {/* Step 3 — New Password */}
                   {resetStep === 3 && (
                     <>
                       <div className="d-flex justify-content-center mb-3">
