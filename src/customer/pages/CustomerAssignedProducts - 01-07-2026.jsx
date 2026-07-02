@@ -181,7 +181,6 @@ function CustomerAssignedProducts() {
   const [placing, setPlacing]   = useState(false)
   const [error, setError]       = useState("")
   const [success, setSuccess]   = useState("")
-  const [customerNote, setCustomerNote] = useState("")
 
   useEffect(() => {
     const load = async () => {
@@ -243,48 +242,27 @@ function CustomerAssignedProducts() {
       return
     }
 
-    // Pehle note lene wala dialog
-    const { value: note, isConfirmed } = await Swal.fire({
-      title: "Add a Note",
-      input: "textarea",
-      inputLabel: "Any special instructions? (optional)",
-      inputPlaceholder: "e.g. Please deliver before 10 AM, extra packaging needed...",
-      inputAttributes: { maxlength: 500 },
-      showCancelButton: true,
-      confirmButtonColor: "#0e606c",
-      cancelButtonColor: "#6c757d",
-      confirmButtonText: "Continue to Order",
-      cancelButtonText: "Cancel",
-      inputValue: customerNote,
-    })
-
-    if (!isConfirmed) return
-    setCustomerNote(note || "")
-
-    // Fir confirmation dialog
     const result = await Swal.fire({
       title: "Place Order?",
       html: `<div style="font-size:14px">
         <b>${orderItems.length} variant${orderItems.length > 1 ? 's' : ''}</b> selected<br/>
         Total: <b style="color:#0e606c">$${totalPrice.toFixed(2)}</b>
-        ${note ? `<br/><br/><div style="background:#f8fafc;border-radius:8px;padding:8px 10px;text-align:left;font-size:13px;color:#374151"><i>Note: ${note}</i></div>` : ''}
       </div>`,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#0e606c",
       cancelButtonColor: "#6c757d",
       confirmButtonText: "Yes, Place Order",
-      cancelButtonText: "Back",
+      cancelButtonText: "Cancel",
     })
     if (!result.isConfirmed) return
 
     setPlacing(true); setError("")
     try {
-      await placeOrder({ items: orderItems, customer_note: note || "" })
+      await placeOrder({ items: orderItems })
       setSuccess("Order placed successfully!")
       setTimeout(() => setSuccess(""), 4000)
       resetAll()
-      setCustomerNote("")
     } catch (err) {
       setError(err.message || "Failed to place order.")
     } finally { setPlacing(false) }
