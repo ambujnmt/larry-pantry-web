@@ -3,6 +3,7 @@ import CustomerPageHeader from "../components/CustomerPageHeader"
 import { getMyOrders, getProfile } from "../../utils/customerApi"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
+import OrderDetailModal from "../components/OrderDetailModal"
 
 const STATUS_BADGE = {
   pending:    { bg: "#fef3c7", color: "#92400e", label: "Pending" },
@@ -47,6 +48,7 @@ function CustomerOrders() {
   const [error, setError] = useState(null)
   const [expandedId, setExpandedId] = useState(null)
   const [customer, setCustomer] = useState({})
+  const [selectedOrder, setSelectedOrder] = useState(null)
 
   useEffect(() => {
     // localStorage se pehle load karo (instant)
@@ -367,83 +369,35 @@ function CustomerOrders() {
                     <span style={{ fontSize: 13, color: "#64748b" }}>{date}</span>
                     <span style={{ fontWeight: 600, fontSize: 14, color: "#1e293b" }}>{total}</span>
                     <StatusBadge status={order.status} />
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <button
-                        onClick={e => downloadInvoice(e, order)}
-                        title="Download Invoice"
-                        style={{
-                          background: "#0e606c", color: "#fff", border: "none",
-                          borderRadius: 6, padding: "5px 10px", cursor: "pointer",
-                          fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 5,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <i className="fa-solid fa-file-invoice" />
-                        <span>Invoice</span>
-                      </button>
-                      {items.length > 0 && (
-                        <i className={`fa-solid fa-chevron-${isOpen ? "up" : "down"}`}
-                          style={{ color: "#94a3b8", fontSize: 12 }} />
-                      )}
-                    </div>
+                    <button
+                      onClick={e => { e.stopPropagation(); setSelectedOrder(order) }}
+                      style={{
+                        background: "#0e606c", color: "#fff", border: "none",
+                        borderRadius: 6, padding: "5px 12px", cursor: "pointer",
+                        fontSize: 12, fontWeight: 600,
+                        display: "flex", alignItems: "center", gap: 5,
+                      }}
+                    >
+                      <i className="fa-solid fa-eye" />
+                      <span>View</span>
+                    </button>
                   </div>
 
-                  {/* Expanded items */}
-                  {isOpen && items.length > 0 && (
-                    <div style={{ background: "#f8fafc", padding: "10px 24px 16px 24px" }}>
-                      <div style={{
-                        border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden",
-                      }}>
-                        <div style={{
-                          display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
-                          padding: "10px 16px", background: "#f1f5f9",
-                          fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".06em",
-                          gap: 8,
-                        }}>
-                          <span>Product</span>
-                          <span>Variant</span>
-                          <span>Qty</span>
-                          <span>Unit Price</span>
-                          <span>Total</span>
-                        </div>
-                        {items.map((item, idx) => (
-                          <div key={idx} style={{
-                            display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
-                            padding: "10px 16px", gap: 8, alignItems: "center",
-                            borderTop: "1px solid #e2e8f0", background: "#fff",
-                          }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                              <img src={item.product_image} alt={item.product_name}
-                                style={{ width: 36, height: 36, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
-                              <span style={{ fontWeight: 500, fontSize: 13, color: "#1e293b" }}>
-                                {item.product_name}
-                              </span>
-                            </div>
-                            <span style={{ fontSize: 12, color: "#64748b" }}>{item.variant_label}</span>
-                            <span style={{ fontSize: 13, color: "#374151" }}>{item.quantity}</span>
-                            <span style={{ fontSize: 13, color: "#475569" }}>
-                              ₹{parseFloat(item.unit_price).toFixed(2)}
-                            </span>
-                            <span style={{ fontWeight: 600, fontSize: 13, color: "#0e606c" }}>
-                              ₹{parseFloat(item.total_price).toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {order.note && (
-                        <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
-                          <span style={{ fontWeight: 600 }}>Note: </span>{order.note}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )
             })}
           </div>
         )}
       </div>
+      {selectedOrder && (
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onDownload={(order) => {
+            downloadInvoice({ stopPropagation: () => {} }, order)
+          }}
+        />
+      )}
     </>
   )
 }
