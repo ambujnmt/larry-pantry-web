@@ -137,6 +137,9 @@ export const deleteUnit = (id) => client(`/admin/units/${id}`, { method: "DELETE
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export const getAdminOrders = () => client("/admin/all-orders", { method: "POST", auth: true })
+export const getAdminOrderDetail = (id) => client(`/admin/orders/${id}`, { auth: true })
+export const updateOrderStatus = (id, status, remarks = "", changed_by = null) =>  client(`/admin/orders/${id}/status`, {
+    method: "POST", auth: true, body: {status, remarks, changed_by} })
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
