@@ -208,54 +208,6 @@ function Home() {
       </section>
       {/* Category Section End */}
 
-      {/* Popular Categories Start */}
-      {/* <section className="popular-categories-section">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 position-relative">
-              <div className="section-title-wrap">
-                <h2 className="section-title">Popular Categories</h2>
-                <p>Some of our popular categories include grocery</p>
-              </div>
-            </div>
-          </div>
-          <div className="categories-box product-border-box">
-            {/* <div className="categories-slider-col-20">
-              <a href="#" className="categories-banner-wrap" style={{ display: 'block', height: '100%' }}>
-                <img
-                  src="assets/images/banners/img_banner4_mixy1.webp"
-                  alt="image"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              </a>
-            </div> */}
-            <div className="categories-slider-col-80">
-              <div className="categories-slider-active">
-                {categories.map(cat => (
-                  <div key={cat.id} className="single-categories-item">
-                    <div className="category-image" style={{ width: '100%', aspectRatio: '1/1', overflow: 'hidden', borderRadius: 8 }}>
-                      <a href="#" style={{ display: 'block', width: '100%', height: '100%' }}>
-                        <img
-                          src={cat.image}
-                          alt={cat.category_name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }}
-                        />
-                      </a>
-                    </div>
-                    <div className="category-content">
-                      <h6><a href="#">{cat.category_name}</a></h6>
-                      <p className="count">{cat.products_count} Products</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section> */}
-      {/* Popular Categories End */}
-
       {/* Best Sellers Section Start */}
       <section className="product-item-section best-sellers-sec">
         <div className="container">
