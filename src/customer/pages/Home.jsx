@@ -197,7 +197,7 @@ function Home() {
             </div>
           </div>
           <div className="categories-box product-border-box">
-            <div className="categories-slider-col-20">
+            {/* <div className="categories-slider-col-20">
               <a href="#" className="categories-banner-wrap" style={{ display: 'block', height: '100%' }}>
                 <img
                   src="assets/images/banners/img_banner4_mixy1.webp"
@@ -205,7 +205,7 @@ function Home() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </a>
-            </div>
+            </div> */}
             <div className="categories-slider-col-80">
               <div className="categories-slider-active">
                 {categories.map(cat => (
