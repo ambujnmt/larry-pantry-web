@@ -209,7 +209,7 @@ function Home() {
       {/* Category Section End */}
 
       {/* Popular Categories Start */}
-      <section className="popular-categories-section">
+      {/* <section className="popular-categories-section">
         <div className="container">
           <div className="row">
             <div className="col-12 position-relative">
@@ -253,7 +253,7 @@ function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
       {/* Popular Categories End */}
 
       {/* Best Sellers Section Start */}
