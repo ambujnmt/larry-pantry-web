@@ -185,6 +185,29 @@ function Home() {
       )}
       {/* Slider Main End */}
 
+      {/* Category Section Start */}
+      <section className="category-section section-space-ptb-90">
+        <div className="container">
+          <div className="col-lg-12 section-title-wrap text-center">
+            <h2 className="section-title">Shop by Department</h2>
+          </div>
+          <div className="category-three-slider-active">
+            {categories.map(cat => (
+              <div key={cat.id} className="col">
+                <div className="single-category text-center">
+                  <h5 className="category-name fw-semibold mb-4">{cat.category_name}</h5>
+                  <div className="category-image">
+                    <a href="#"><img src={cat.image} alt={cat.category_name} onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }} /></a>
+                  </div>
+                  <div className="category-content"><p>{cat.products_count} Products</p></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      {/* Category Section End */}
+
       {/* Popular Categories Start */}
       <section className="popular-categories-section">
         <div className="container">
@@ -262,29 +285,6 @@ function Home() {
         </div>
       </section>
       {/* Best Sellers Section End */}
-
-      {/* Category Section Start */}
-      <section className="category-section section-space-ptb-90">
-        <div className="container">
-          <div className="col-lg-12 section-title-wrap text-center">
-            <h2 className="section-title">Shop by Department</h2>
-          </div>
-          <div className="category-three-slider-active">
-            {categories.map(cat => (
-              <div key={cat.id} className="col">
-                <div className="single-category text-center">
-                  <h5 className="category-name fw-semibold mb-4">{cat.category_name}</h5>
-                  <div className="category-image">
-                    <a href="#"><img src={cat.image} alt={cat.category_name} onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }} /></a>
-                  </div>
-                  <div className="category-content"><p>{cat.products_count} Products</p></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      {/* Category Section End */}
 
       {/* New Arrivals Section Start */}
       <section className="product-item-section pb-5">
