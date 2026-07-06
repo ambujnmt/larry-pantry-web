@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import Swal from "sweetalert2"
 import { getAssignedProducts, placeOrder, STORAGE_URL } from "../../utils/customerApi"
 import CustomerPageHeader from "../components/CustomerPageHeader"
+import ProductDetailModal from "../components/ProductDetailModal"
 
 const productImg = (p) => {
   const url = p.primary_image?.image_url || p.image_url || ""
@@ -43,7 +44,7 @@ function QtyInput({ value, onChange }) {
   )
 }
 
-function ProductCard({ product, qtys, onQtyChange }) {
+function ProductCard({ product, qtys, onQtyChange, onViewDetails }) {
   const variants  = product.variants || []
   const hasAnyQty = variants.some(v => (qtys[v.id] || 0) > 0)
   const cardTotal = variants.reduce((s, v) => s + (qtys[v.id] || 0) * parseFloat(v.selling_price || 0), 0)
@@ -68,6 +69,7 @@ function ProductCard({ product, qtys, onQtyChange }) {
           <div className="flex-grow-1 overflow-hidden">
             <div className="fw-bold text-truncate" style={{ fontSize: 15, color: '#111' }}>
               {product.name}
+              <button type="button" onClick={() => onViewDetails(product)} style={{ float: 'right', padding: 4, background: 'rgb(96 223 243)' }} className="btn btn-sm" ><i className="fa-regular fa-eye me-1" />View Details</button>
             </div>
             {product.category_name && (
               <div style={{ fontSize: 12, color: '#888' }}>{product.category_name}</div>
@@ -182,6 +184,8 @@ function CustomerAssignedProducts() {
   const [error, setError]       = useState("")
   const [success, setSuccess]   = useState("")
   const [customerNote, setCustomerNote] = useState("")
+  const [viewProduct, setViewProduct]   = useState(null) // product currently shown in details modal
+  const [searchTerm, setSearchTerm]     = useState("")   // search box value
 
   useEffect(() => {
     const load = async () => {
@@ -220,7 +224,24 @@ function CustomerAssignedProducts() {
     })
   }
 
-  // all variant rows with qty > 0
+  // ── Search filter: product naam YA category naam se filter karo ──
+  const filteredProducts = products.filter(p => {
+    const term = searchTerm.toLowerCase()
+    const nameMatch     = p.name?.toLowerCase().includes(term)
+    const categoryMatch = p.category_name?.toLowerCase().includes(term)
+    return nameMatch || categoryMatch
+  })
+
+  // ── Group filtered products category-wise ──
+  const groupedProducts = filteredProducts.reduce((groups, p) => {
+    const catName = p.category_name || "Uncategorized"
+    if (!groups[catName]) groups[catName] = []
+    groups[catName].push(p)
+    return groups
+  }, {})
+  const categoryNames = Object.keys(groupedProducts)
+
+  // all variant rows with qty > 0 (hamesha saare products se, search se independent)
   const orderItems = []
   products.forEach(p => {
     const qtys = items[p.id] || {};
@@ -300,12 +321,32 @@ function CustomerAssignedProducts() {
         icon="fa-box"
         title="My Assigned Products"
         subtitle={subtitle}
-        right={!loading && products.length > 0 && orderItems.length > 0 && (
-          <button onClick={resetAll}
-            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
-              borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, padding: '5px 12px', cursor: 'pointer' }}>
-            <i className="fa-solid fa-rotate-left me-1" />Reset
-          </button>
+        right={!loading && products.length > 0 && (
+          <div className="d-flex align-items-center gap-2">
+            <div className="position-relative">
+              <i className="fa-solid fa-magnifying-glass" style={{
+                position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 12,
+              }} />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Search products..."
+                style={{
+                  width: 260, height: 34, borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.3)', paddingLeft: 10, paddingRight: searchTerm ? 30 : 12,
+                }}
+              />
+              {searchTerm && (
+                <button type="button" onClick={() => setSearchTerm("")} style={{
+                  position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: 12,
+                }}>
+                  <i className="fa-solid fa-xmark" />
+                </button>
+              )}
+            </div>
+          </div>
         )}
       />
 
@@ -335,18 +376,45 @@ function CustomerAssignedProducts() {
             </div>
           </div>
         </div>
+      ) : categoryNames.length === 0 ? (
+        <div className="app-card shadow-sm" style={{ borderRadius: 14 }}>
+          <div className="app-card-body p-5 text-center">
+            <i className="fa-solid fa-magnifying-glass" style={{ fontSize: 40, color: '#cbd5e1', marginBottom: 16 }} />
+            <div className="fw-semibold" style={{ fontSize: 16, color: '#374151' }}>No products found</div>
+            <div style={{ fontSize: 14, color: '#888', marginTop: 6 }}>
+              Try searching with a different keyword.
+            </div>
+          </div>
+        </div>
       ) : (
         <>
-          <div className="d-flex flex-column gap-3 mb-4">
-            {products.map(p => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                qtys={items[p.id] || {}}
-                onQtyChange={handleQtyChange}
-              />
-            ))}
-          </div>
+          {/* ── Category-wise Product Sections ── */}
+          {categoryNames.map(catName => (
+            <div key={catName} className="mb-4">
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <div style={{
+                  width: 4, height: 20, borderRadius: 4, background: '#0e606c', flexShrink: 0,
+                }} />
+                <h6 className="mb-0 fw-bold" style={{ fontSize: 15, color: '#1e293b' }}>
+                  {catName}
+                </h6>
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                  ({groupedProducts[catName].length})
+                </span>
+              </div>
+              <div className="d-flex flex-column gap-3">
+                {groupedProducts[catName].map(p => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    qtys={items[p.id] || {}}
+                    onQtyChange={handleQtyChange}
+                    onViewDetails={setViewProduct}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
 
           {/* ── Sticky Order Bar ── */}
           <div className="app-card shadow-sm" style={{
@@ -391,6 +459,11 @@ function CustomerAssignedProducts() {
             </div>
           </div>
         </>
+      )}
+
+      {/* ── Product Details Modal ── */}
+      {viewProduct && (
+        <ProductDetailModal product={viewProduct} onClose={() => setViewProduct(null)} />
       )}
     </>
   )

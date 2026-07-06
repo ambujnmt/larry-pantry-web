@@ -55,6 +55,7 @@ function CustomerLogin() {
   const [first_name, setFirstName]            = useState("")
   const [last_name, setLastName]              = useState("")
   const [mobile, setMobile]                   = useState("")
+  const [mobile_2, setMobile_2]                   = useState("")
   const [regStep, setRegStep]                 = useState(1) // 1, 2, 3
 
   // Register OTP
@@ -162,13 +163,16 @@ function CustomerLogin() {
   const [organizationType, setOrganizationType] = useState("")
   const [storeAddress, setStoreAddress]         = useState("")
 
-  const DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
+  const DAYS = ["saturday","sunday","monday","tuesday","wednesday","thursday","friday"]
   const defaultHours = DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: "", close: "", closed: false } }), {})
   const [workingHours, setWorkingHours] = useState(defaultHours)
 
   const updateHour = (day, field, value) => {
     setWorkingHours(prev => ({ ...prev, [day]: { ...prev[day], [field]: value } }))
   }
+
+  // Family/Personal accounts skip the "Business Info" step entirely
+  const isFamilyPersonal = organizationType === "Family/Personal"
 
   // ── LOGIN ──
   const handleLogin = async (e) => {
@@ -182,13 +186,14 @@ function CustomerLogin() {
 
   // ── REGISTER STEP VALIDATION ──
   const validateStep1 = () => {
+    if (!organizationType)    { setError("Please select your organization type."); return false }
     if (!first_name.trim()) { setError("First name is required."); return false }
     if (!email.trim())      { setError("Email is required."); return false }
     return true
   }
 
   const validateStep2 = () => {
-    if (!organizationType)    { setError("Please select your organization type."); return false }
+    if (isFamilyPersonal) return true // Business info not required for Family/Personal
     if (!storeAddress.trim()) { setError("Please enter your store address."); return false }
     return true
   }
@@ -196,7 +201,11 @@ function CustomerLogin() {
   const goToStep = (step) => {
     setError("")
     if (step === 2 && !validateStep1()) return
-    if (step === 3 && !validateStep2()) return
+    if (step === 3) {
+      // Allow jumping directly from Step 1 -> Step 3 when Family/Personal (Step 2 skipped)
+      if (regStep === 1 && !validateStep1()) return
+      if (!validateStep2()) return
+    }
     setRegStep(step)
   }
 
@@ -312,7 +321,14 @@ function CustomerLogin() {
     </div>
   )
 
-  const regStepLabels = ["Account Info", "Business Info", "Security"]
+  const regStepLabels = isFamilyPersonal
+    ? ["Account Info", "Security"]
+    : ["Account Info", "Business Info", "Security"]
+
+  // Display index for the step indicator (Family/Personal skips step 2, so step 3 shows as "2 of 2")
+  const displayStepNumber = isFamilyPersonal ? (regStep === 3 ? 2 : 1) : regStep
+  const displayTotalSteps = isFamilyPersonal ? 2 : 3
+  const dotSteps = isFamilyPersonal ? [1, 3] : [1, 2, 3]
 
   return (
     <>
@@ -368,10 +384,10 @@ function CustomerLogin() {
               {/* ════ LOGIN ════ */}
               {tab === "login" && (
                 <>
-                  <p className="text-secondary mb-4" style={{fontSize:14}}>Sign in to your account to continue</p>
+                  <p className="text-black mb-4" style={{fontSize:14}}>Sign in to your account to continue</p>
                   <form onSubmit={handleLogin} noValidate>
                     <div className="mb-3">
-                      <label className="form-label small text-secondary">Email Address</label>
+                      <label className="form-label small text-black">Email Address</label>
                       <div className="position-relative">
                         <span className="cl-icon"><i className="fa fa-envelope" /></span>
                         <input type="email" className="form-control cl-input" placeholder="Enter your email ID"
@@ -379,7 +395,7 @@ function CustomerLogin() {
                       </div>
                     </div>
                     <div className="mb-3">
-                      <label className="form-label small text-secondary">Password</label>
+                      <label className="form-label small text-black">Password</label>
                       <div className="position-relative">
                         <span className="cl-icon"><i className="fa fa-lock" /></span>
                         <input type={showPass ? "text" : "password"} className="form-control cl-input"
@@ -404,15 +420,17 @@ function CustomerLogin() {
                 </>
               )}
 
-              {/* ════ REGISTER — 3 STEP WIZARD ════ */}
+              {/* ════ REGISTER — WIZARD (2 OR 3 STEPS) ════ */}
               {tab === "register" && (
                 <>
                   {/* Step indicator */}
                   <div className="mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="reg-step-label">Step {regStep} of 3 — {regStepLabels[regStep - 1]}</span>
+                      <span className="reg-step-label">
+                        Step {displayStepNumber} of {displayTotalSteps} — {regStepLabels[displayStepNumber - 1]}
+                      </span>
                       <div className="d-flex gap-2">
-                        {[1,2,3].map(s => (
+                        {dotSteps.map(s => (
                           <div key={s} className={`step-dot ${s < regStep ? "done" : s === regStep ? "active" : ""}`} />
                         ))}
                       </div>
@@ -422,47 +440,9 @@ function CustomerLogin() {
                   {/* ─── STEP 1: Account Info ─── */}
                   {regStep === 1 && (
                     <>
-                      <p className="text-secondary mb-4" style={{fontSize:14}}>Let's start with your basic details</p>
+                      {/*<p className="text-black mb-4" style={{fontSize:14}}>Let's start with your basic details</p>*/}
                       <div className="mb-3">
-                        <label className="form-label small text-secondary">First Name</label>
-                        <div className="position-relative">
-                          <span className="cl-icon"><i className="fa fa-user" /></span>
-                          <input type="text" className="form-control cl-input" placeholder="Enter first name" value={first_name} onChange={e => setFirstName(e.target.value)} required />
-                        </div>
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label small text-secondary">Last Name</label>
-                        <div className="position-relative">
-                          <span className="cl-icon"><i className="fa fa-user" /></span>
-                          <input type="text" className="form-control cl-input" placeholder="Enter last name" value={last_name} onChange={e => setLastName(e.target.value)} />
-                        </div>
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label small text-secondary">Email Address</label>
-                        <div className="position-relative">
-                          <span className="cl-icon"><i className="fa fa-envelope" /></span>
-                          <input type="email" className="form-control cl-input" placeholder="Enter your email ID" value={email} onChange={e => setEmail(e.target.value)} required />
-                        </div>
-                      </div>
-                      <div className="mb-4">
-                        <label className="form-label small text-secondary">Phone Number</label>
-                        <div className="position-relative">
-                          <span className="cl-icon"><i className="fa fa-phone" /></span>
-                          <input type="tel" className="form-control cl-input" placeholder="Enter your phone no." value={mobile} onChange={e => setMobile(e.target.value)} />
-                        </div>
-                      </div>
-                      <button type="button" className="btn text-white w-100 cl-btn" onClick={() => goToStep(2)}>
-                        Next: Business Info <i className="fa fa-arrow-right ms-2" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* ─── STEP 2: Business Info ─── */}
-                  {regStep === 2 && (
-                    <>
-                      <p className="text-secondary mb-4" style={{fontSize:14}}>Tell us about your business</p>
-                      <div className="mb-3">
-                        <label className="form-label small text-secondary">Organization Type</label>
+                        <label className="form-label small text-black">Organization Type</label>
                         <select className="form-control cl-input" value={organizationType}
                           onChange={e => setOrganizationType(e.target.value)} required>
                           <option value="">Select organization type</option>
@@ -473,9 +453,66 @@ function CustomerLogin() {
                           <option value="Family/Personal">Family / Personal</option>
                         </select>
                       </div>
+                      <div className="row">
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label small text-black">First Name</label>
+                          <div className="position-relative">
+                            <span className="cl-icon"><i className="fa fa-user" /></span>
+                            <input type="text" className="form-control cl-input" placeholder="Enter first name" value={first_name} onChange={e => setFirstName(e.target.value)} required />
+                          </div>
+                        </div>
+
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label small text-black">Last Name</label>
+                          <div className="position-relative">
+                            <span className="cl-icon"><i className="fa fa-user" /></span>
+                            <input type="text" className="form-control cl-input" placeholder="Enter last name" value={last_name} onChange={e => setLastName(e.target.value)} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label small text-black">Email Address</label>
+                        <div className="position-relative">
+                          <span className="cl-icon"><i className="fa fa-envelope" /></span>
+                          <input type="email" className="form-control cl-input" placeholder="Enter your email ID" value={email} onChange={e => setEmail(e.target.value)} required />
+                        </div>
+                      </div>
+
+                      <div className="row">
+                        <div className="col-md-6 mb-4">
+                          <label className="form-label small text-black">Cell Phone</label>
+                          <div className="position-relative">
+                            <span className="cl-icon"><i className="fa fa-phone" /></span>
+                            <input type="tel" className="form-control cl-input" placeholder="Enter your Cell phone no." value={mobile} onChange={e => setMobile(e.target.value)} />
+                          </div>
+                        </div>
+
+                        <div className="col-md-6 mb-4">
+                          <label className="form-label small text-black">Store Number</label>
+                          <div className="position-relative">
+                            <span className="cl-icon"><i className="fa fa-store" /></span>
+                            <input type="tel" className="form-control cl-input" placeholder="Enter store phone no." value={mobile_2} onChange={e => setMobile_2(e.target.value)} />
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="btn text-white w-100 cl-btn"
+                        onClick={() => goToStep(isFamilyPersonal ? 3 : 2)}
+                      >
+                        Next: {isFamilyPersonal ? "Security" : "Business Info"} <i className="fa fa-arrow-right ms-2" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* ─── STEP 2: Business Info (skipped for Family/Personal) ─── */}
+                  {regStep === 2 && !isFamilyPersonal && (
+                    <>
+                      {/*<p className="text-black mb-4" style={{fontSize:14}}>Tell us about your business</p>*/}
 
                       <div className="mb-3">
-                        <label className="form-label small text-secondary">Store Address</label>
+                        <label className="form-label small text-black">Address</label>
                         <div className="position-relative">
                           <span className="cl-icon"><i className="fa fa-map-marker" /></span>
                           <input type="text" className="form-control cl-input" placeholder="Enter store address"
@@ -484,8 +521,8 @@ function CustomerLogin() {
                       </div>
 
                       <div className="mb-4">
-                        <label className="form-label small text-secondary d-block mb-2">Working Hours</label>
-                        <div style={{ maxHeight: 220, overflowY: 'auto', paddingRight: 4 }}>
+                        <label className="form-label small text-black d-block mb-2">Working Hours</label>
+                        <div style={{ maxHeight: 280, overflowY: 'auto', paddingRight: 4 }}>
                           {DAYS.map(day => (
                             <div key={day} className="d-flex align-items-center gap-2 mb-2">
                               <div style={{ width: 80, fontSize: 12.5, textTransform: 'capitalize' }}>{day}</div>
@@ -519,10 +556,10 @@ function CustomerLogin() {
                   {/* ─── STEP 3: Security ─── */}
                   {regStep === 3 && (
                     <>
-                      <p className="text-secondary mb-4" style={{fontSize:14}}>Finally, set a password for your account</p>
+                      <p className="text-black mb-4" style={{fontSize:14}}>Finally, set a password for your account</p>
                       <form onSubmit={handleRegister} noValidate>
                         <div className="mb-3">
-                          <label className="form-label small text-secondary">Password</label>
+                          <label className="form-label small text-black">Password</label>
                           <div className="position-relative">
                             <span className="cl-icon"><i className="fa fa-lock" /></span>
                             <input type={showPass ? "text" : "password"} className="form-control cl-input" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} style={{paddingRight:40}} required />
@@ -532,7 +569,7 @@ function CustomerLogin() {
                           </div>
                         </div>
                         <div className="mb-4">
-                          <label className="form-label small text-secondary">Confirm Password</label>
+                          <label className="form-label small text-black">Confirm Password</label>
                           <div className="position-relative">
                             <span className="cl-icon"><i className="fa fa-lock" /></span>
                             <input type={showPass ? "text" : "password"} className="form-control cl-input" placeholder="Re-enter your password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} style={{paddingRight:40}} required />
@@ -540,7 +577,12 @@ function CustomerLogin() {
                         </div>
 
                         <div className="d-flex gap-2">
-                          <button type="button" className="cl-btn-outline flex-grow-1" onClick={() => setRegStep(2)} disabled={loading}>
+                          <button
+                            type="button"
+                            className="cl-btn-outline flex-grow-1"
+                            onClick={() => setRegStep(isFamilyPersonal ? 1 : 2)}
+                            disabled={loading}
+                          >
                             <i className="fa fa-arrow-left me-2" />Back
                           </button>
                           <button type="submit" className="btn text-white cl-btn flex-grow-1" disabled={loading}>
@@ -565,7 +607,7 @@ function CustomerLogin() {
                     </div>
                   </div>
                   <h2 className="fw-semibold text-center mb-1" style={{fontSize:22,color:'#111'}}>Verify your email</h2>
-                  <p className="text-center text-secondary mb-4" style={{fontSize:13.5}}>
+                  <p className="text-center text-black mb-4" style={{fontSize:13.5}}>
                     We've sent a 6-digit code to<br /><strong style={{color:'#0b5560'}}>{otpEmail}</strong>
                   </p>
                   <form onSubmit={handleVerifyOtp} noValidate>
@@ -575,7 +617,7 @@ function CustomerLogin() {
                     </button>
                   </form>
                   <div className="text-center" style={{fontSize:13}}>
-                    <span className="text-secondary">Didn't receive the code? </span>
+                    <span className="text-black">Didn't receive the code? </span>
                     {resendCooldown > 0
                       ? <span style={{color:'#a0aec0'}}>Resend in {resendCooldown}s</span>
                       : <button type="button" className="cl-link" onClick={handleResendOtp} disabled={loading}>Resend OTP</button>}
@@ -612,12 +654,12 @@ function CustomerLogin() {
                         </div>
                       </div>
                       <h2 className="fw-semibold text-center mb-1" style={{fontSize:22,color:'#111'}}>Forgot Password?</h2>
-                      <p className="text-center text-secondary mb-4" style={{fontSize:13.5}}>
+                      <p className="text-center text-black mb-4" style={{fontSize:13.5}}>
                         Enter your registered email — we'll send a verification code.
                       </p>
                       <form onSubmit={handleResetSendOtp} noValidate>
                         <div className="mb-4">
-                          <label className="form-label small text-secondary">Email Address</label>
+                          <label className="form-label small text-black">Email Address</label>
                           <div className="position-relative">
                             <span className="cl-icon"><i className="fa fa-envelope" /></span>
                             <input type="email" className="form-control cl-input" placeholder="Enter your email ID"
@@ -639,7 +681,7 @@ function CustomerLogin() {
                         </div>
                       </div>
                       <h2 className="fw-semibold text-center mb-1" style={{fontSize:22,color:'#111'}}>Enter OTP</h2>
-                      <p className="text-center text-secondary mb-4" style={{fontSize:13.5}}>
+                      <p className="text-center text-black mb-4" style={{fontSize:13.5}}>
                         6-digit code sent to<br /><strong style={{color:'#0b5560'}}>{resetEmail}</strong>
                       </p>
                       <form onSubmit={handleResetVerifyOtp} noValidate>
@@ -649,7 +691,7 @@ function CustomerLogin() {
                         </button>
                       </form>
                       <div className="text-center" style={{fontSize:13}}>
-                        <span className="text-secondary">Didn't receive the code? </span>
+                        <span className="text-black">Didn't receive the code? </span>
                         {resetResendCooldown > 0
                           ? <span style={{color:'#a0aec0'}}>Resend in {resetResendCooldown}s</span>
                           : <button type="button" className="cl-link" onClick={handleResetResendOtp} disabled={loading}>Resend OTP</button>}
@@ -665,12 +707,12 @@ function CustomerLogin() {
                         </div>
                       </div>
                       <h2 className="fw-semibold text-center mb-1" style={{fontSize:22,color:'#111'}}>Set New Password</h2>
-                      <p className="text-center text-secondary mb-4" style={{fontSize:13.5}}>
+                      <p className="text-center text-black mb-4" style={{fontSize:13.5}}>
                         Choose a strong password for your account.
                       </p>
                       <form onSubmit={handleResetNewPassword} noValidate>
                         <div className="mb-3">
-                          <label className="form-label small text-secondary">New Password</label>
+                          <label className="form-label small text-black">New Password</label>
                           <div className="position-relative">
                             <span className="cl-icon"><i className="fa fa-lock" /></span>
                             <input type={showNewPass ? "text" : "password"} className="form-control cl-input"
@@ -682,7 +724,7 @@ function CustomerLogin() {
                           </div>
                         </div>
                         <div className="mb-4">
-                          <label className="form-label small text-secondary">Confirm New Password</label>
+                          <label className="form-label small text-black">Confirm New Password</label>
                           <div className="position-relative">
                             <span className="cl-icon"><i className="fa fa-lock" /></span>
                             <input type={showNewPass ? "text" : "password"} className="form-control cl-input"
