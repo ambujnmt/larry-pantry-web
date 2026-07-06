@@ -38,9 +38,9 @@ function Header() {
             <div className="row align-items-center">
               <div className="col-lg-6 col-md-6">
                 <div className="header-top-left-area">
-                  <p className="header-top-text-message">
+                  {/* <p className="header-top-text-message">
                     Free shipping on orders over $25. <Link to="/">Read more</Link>
-                  </p>
+                  </p> */}
                 </div>
               </div>
               <div className="col-lg-6 col-md-6">

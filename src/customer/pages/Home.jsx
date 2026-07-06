@@ -1,10 +1,12 @@
 // src/customer/pages/Home.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ContactBanner from "../components/ContactBanner";
 import Newsletter from "../components/Newsletter";
 import FeatureIcons from "../components/FeatureIcons";
 import ProductCard from "../components/ProductCard";
 import { getWebsiteCategories, getBestSellers, getNewArrivals, getFeaturedProducts, getWebsiteSliders } from "../../utils/websiteApi";
+
+import { Link } from "react-router-dom";
 
 function Home() {
   const [categories,  setCategories]  = useState([])
@@ -13,8 +15,8 @@ function Home() {
   const [featured,    setFeatured]    = useState([])
   const [sliders,     setSliders]     = useState([])
   const [dataLoaded,  setDataLoaded]  = useState(false)
+  const [activeCat, setActiveCat] = useState(null)
 
-  // Saara data ek hi jagah fetch
   useEffect(() => {
     const load = async () => {
       try {
@@ -27,6 +29,7 @@ function Home() {
         ])
         setCategories(catRes.data  || [])
         setBestSellers(bsRes.data  || [])
+        console.log(bsRes.data)
         setNewArrivals(naRes.data  || [])
         setFeatured(ftRes.data     || [])
         setSliders(sliderRes.data  || [])
@@ -131,7 +134,7 @@ function Home() {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [dataLoaded])
+}, [dataLoaded, activeCat])
 
   const getPrice = (product) => {
     const v = product.variants?.[0]
@@ -141,6 +144,29 @@ function Home() {
 
   const getImage = (product) =>
     product.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+
+  // Best sellers me jo categories products hain, unme se max 5 random category nikalo
+  const bestSellerCategories = useMemo(() => {
+    const map = {}
+    bestSellers.forEach(p => {
+      if (p.category_id && !map[p.category_id]) {
+        map[p.category_id] = { id: p.category_id, name: p.category_name }
+      }
+    })
+    const all = Object.values(map)
+    return [...all].sort(() => Math.random() - 0.5).slice(0, 5)
+  }, [bestSellers])
+
+
+  useEffect(() => {
+    if (bestSellerCategories.length > 0 && activeCat === null) {
+      setActiveCat(bestSellerCategories[0].id)
+    }
+  }, [bestSellerCategories])
+
+  const filteredBestSellers = activeCat
+    ? bestSellers.filter(p => p.category_id === activeCat)
+    : bestSellers
 
   return (
     <main>
@@ -185,84 +211,6 @@ function Home() {
       )}
       {/* Slider Main End */}
 
-      {/* Popular Categories Start */}
-      <section className="popular-categories-section">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 position-relative">
-              <div className="section-title-wrap">
-                <h2 className="section-title">Popular Categories</h2>
-                <p>Some of our popular categories include grocery</p>
-              </div>
-            </div>
-          </div>
-          <div className="categories-box product-border-box">
-            <div className="categories-slider-col-20">
-              <a href="#" className="categories-banner-wrap" style={{ display: 'block', height: '100%' }}>
-                <img
-                  src="assets/images/banners/img_banner4_mixy1.webp"
-                  alt="image"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              </a>
-            </div>
-            <div className="categories-slider-col-80">
-              <div className="categories-slider-active">
-                {categories.map(cat => (
-                  <div key={cat.id} className="single-categories-item">
-                    <div className="category-image" style={{ width: '100%', aspectRatio: '1/1', overflow: 'hidden', borderRadius: 8 }}>
-                      <a href="#" style={{ display: 'block', width: '100%', height: '100%' }}>
-                        <img
-                          src={cat.image}
-                          alt={cat.category_name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }}
-                        />
-                      </a>
-                    </div>
-                    <div className="category-content">
-                      <h6><a href="#">{cat.category_name}</a></h6>
-                      <p className="count">{cat.products_count} Products</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* Popular Categories End */}
-
-      {/* Best Sellers Section Start */}
-      <section className="product-item-section best-sellers-sec">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 position-relative">
-              <div className="d-lg-flex align-items-center justify-content-lg-between mb-4">
-                <div className="section-title-wrap mb-md-0">
-                  <h2 className="section-title">Best Sellers</h2>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                </div>
-                <ul className="nav menu-tabs" role="tablist">
-                  <li className="active"><a className="active" href="#chicken" role="tab" data-bs-toggle="tab">Chicken</a></li>
-                  <li><a href="#eggs" role="tab" data-bs-toggle="tab">Eggs</a></li>
-                  <li><a href="#grocery-bakery" role="tab" data-bs-toggle="tab">Grocery</a></li>
-                  <li><a href="#dairy" role="tab" data-bs-toggle="tab">Dairy</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="product-border-box">
-            <div className="product-slider-active-4">
-              {bestSellers.map(p => (
-                <ProductCard key={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* Best Sellers Section End */}
-
       {/* Category Section Start */}
       <section className="category-section section-space-ptb-90">
         <div className="container">
@@ -275,7 +223,9 @@ function Home() {
                 <div className="single-category text-center">
                   <h5 className="category-name fw-semibold mb-4">{cat.category_name}</h5>
                   <div className="category-image">
-                    <a href="#"><img src={cat.image} alt={cat.category_name} onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }} /></a>
+                    <Link to={`/categories/${cat.id}`}>
+                      <img src={cat.image} alt={cat.category_name} onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }} />
+                    </Link>
                   </div>
                   <div className="category-content"><p>{cat.products_count} Products</p></div>
                 </div>
@@ -285,6 +235,42 @@ function Home() {
         </div>
       </section>
       {/* Category Section End */}
+
+      {/* Best Sellers Section Start */}
+      <section className="product-item-section best-sellers-sec">
+        <div className="container">
+          <div className="row">
+            <div className="col-12 position-relative">
+              <div className="d-lg-flex align-items-center justify-content-lg-between mb-4">
+                <div className="section-title-wrap mb-md-0">
+                  <h2 className="section-title">Best Sellers</h2>
+                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                </div>
+                <ul className="nav menu-tabs" role="tablist">
+                  {bestSellerCategories.map(cat => (
+                    <li key={cat.id} className={activeCat === cat.id ? "active" : ""}>
+                      <a href="#" className={activeCat === cat.id ? "active" : ""}
+                        onClick={e => { e.preventDefault(); setActiveCat(cat.id) }}>
+                        {cat.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="product-border-box">
+            <div className="product-slider-active-4" key={activeCat}>
+              {filteredBestSellers.map(p => (
+                <Link to={`/product/${p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* Best Sellers Section End */}
 
       {/* New Arrivals Section Start */}
       <section className="product-item-section pb-5">

@@ -6,6 +6,7 @@ import Home from "./customer/pages/Home";
 import Contact from "./customer/pages/Contact";
 import About from "./customer/pages/About";
 import Categories from "./customer/pages/Categories";
+import ProductDetails from "./customer/pages/ProductDetails"
 /*----- Customer Portal ------*/
 import CustomerLogin            from "./customer/pages/CustomerLogin";
 import CustomerDashboardLayout  from "./customer/layouts/CustomerDashboardLayout";
@@ -45,6 +46,9 @@ function App() {
         <Route path="/contact" element={<><Header /><Contact /><Footer /></>} />
         <Route path="/about" element={<><Header /><About /><Footer /></>} />
         <Route path="/categories" element={<><Header /><Categories /><Footer /></>} />
+        <Route path="/product/:id" element={<><Header /><ProductDetails /><Footer /></>} />
+        <Route path="/categories" element={<><Header /><Categories /><Footer /></>} />
+        <Route path="/categories/:categoryId" element={<><Header /><Categories /><Footer /></>} />
 
         {/* Customer Portal Routes */}
         <Route path="/customer"     element={<CustomerLogin />} />

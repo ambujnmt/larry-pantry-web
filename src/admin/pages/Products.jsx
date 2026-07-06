@@ -36,6 +36,7 @@ function Products() {
   const [newPreviews, setNewPreviews] = useState([])
   const fileRef = useRef()
   const joditConfig = useMemo(() => ({ height: 300, zIndex: 10100 }), [])
+  const [activeImage, setActiveImage] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -216,7 +217,7 @@ function Products() {
                       </span>
                     </td>
                     <td className="align-middle">
-                      <button className="btn btn-sm btn-outline-info me-1" onClick={() => setViewItem(p)}><i className="fa fa-eye" /></button>
+                      <button className="btn btn-sm btn-outline-info me-1" onClick={() => { setViewItem(p); setActiveImage(null) }}><i className="fa fa-eye" /></button>
                       <button className="btn btn-sm btn-outline-primary me-1" onClick={() => openEdit(p)}><i className="fa fa-edit" /></button>
                       <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(p.id)} disabled={deleting === p.id}>
                         {deleting === p.id ? <span className="spinner-border spinner-border-sm" /> : <i className="fa fa-trash" />}
@@ -447,7 +448,7 @@ function Products() {
                 <div className="modal-body">
                   <div className="row">
                     <div className="col-md-4">
-                      <img src={primaryImg(viewItem)}
+                      <img src={activeImage || primaryImg(viewItem)}
                         onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
                         className="img-fluid rounded border w-100" style={{ objectFit: 'cover', maxHeight: 280 }} alt={viewItem.name} />
                       {viewItem.images?.length > 1 && (
@@ -455,7 +456,9 @@ function Products() {
                           {viewItem.images.map(img => (
                             <img key={img.id} src={img.image_url || "/admin-assets/images/placeholder.png"}
                               onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
-                              style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, border: '1px solid #ddd' }} />
+                              onClick={() => setActiveImage(img.image_url)}
+                              style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, cursor: 'pointer',
+                                border: (activeImage || primaryImg(viewItem)) === img.image_url ? '2px solid #0e606c' : '1px solid #ddd' }} />
                           ))}
                         </div>
                       )}
