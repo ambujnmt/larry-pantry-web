@@ -16,12 +16,6 @@ function Home() {
   const [sliders,     setSliders]     = useState([])
   const [dataLoaded,  setDataLoaded]  = useState(false)
   const [activeCat, setActiveCat] = useState(null)
-  // Category name URL-friendly : "Fresh Vegetables" -> "fresh-vegetables"
-  const slugify = (str = "") =>
-    str.toString().toLowerCase().trim()
-      .replace(/&/g, "and")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
 
   useEffect(() => {
     const load = async () => {
@@ -229,7 +223,7 @@ function Home() {
                 <div className="single-category text-center">
                   <h5 className="category-name fw-semibold mb-4">{cat.category_name}</h5>
                   <div className="category-image">
-                    <Link to={`/categories/${slugify(cat.category_name)}`}>
+                    <Link to={`/categories/${cat.id}`}>
                       <img src={cat.image} alt={cat.category_name} onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }} />
                     </Link>
                   </div>
@@ -248,9 +242,9 @@ function Home() {
           <div className="row">
             <div className="col-12 position-relative">
               <div className="d-lg-flex align-items-center justify-content-lg-between mb-4">
-                <div className="col-md-6 section-title-wrap mb-md-0">
+                <div className="section-title-wrap mb-md-0">
                   <h2 className="section-title">Best Sellers</h2>
-                  <p>Explore our most popular products, trusted and preferred by our customers. View product details and place your orders.</p>
+                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
                 </div>
                 <ul className="nav menu-tabs" role="tablist">
                   {bestSellerCategories.map(cat => (
@@ -268,7 +262,7 @@ function Home() {
           <div className="product-border-box">
             <div className="product-slider-active-4" key={activeCat}>
               {filteredBestSellers.map(p => (
-                <Link to={`/product/${p.slug || p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to={`/product/${p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
                 </Link>
               ))}
@@ -285,18 +279,15 @@ function Home() {
             <div className="col-12 position-relative">
               <div className="section-title-wrap">
                 <h2 className="section-title">New Arrivals</h2>
-                <p>Check out our new collection and see what's new. Be sure to review the product details before placing your order.</p>
+                <p>Add bestselling products to weekly line up</p>
               </div>
             </div>
           </div>
           <div className="product-slider-active product-border-box">
-            {newArrivals.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
-              </Link>
+            {newArrivals.map(p => (
+              <ProductCard key={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
             ))}
           </div>
-
         </div>
       </section>
       {/* New Arrivals Section End */}

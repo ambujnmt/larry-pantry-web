@@ -46,8 +46,9 @@ function App() {
         <Route path="/contact" element={<><Header /><Contact /><Footer /></>} />
         <Route path="/about" element={<><Header /><About /><Footer /></>} />
         <Route path="/categories" element={<><Header /><Categories /><Footer /></>} />
-        <Route path="/categories/:categorySlug" element={<><Header /><Categories /><Footer /></>} />
-        <Route path="/product/:slug" element={<><Header /><ProductDetails /><Footer /></>} />
+        <Route path="/product/:id" element={<><Header /><ProductDetails /><Footer /></>} />
+        <Route path="/categories" element={<><Header /><Categories /><Footer /></>} />
+        <Route path="/categories/:categoryId" element={<><Header /><Categories /><Footer /></>} />
 
         {/* Customer Portal Routes */}
         <Route path="/customer"     element={<CustomerLogin />} />
