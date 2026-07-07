@@ -7,24 +7,42 @@ import FeatureIcons from "../components/FeatureIcons";
 import ProductCard from "../components/ProductCard";
 import { getWebsiteCategories, getProductsByCategory } from "../../utils/websiteApi";
 
+// Category name ko URL-friendly bana deta hai: "Fresh Vegetables" -> "fresh-vegetables"
+const slugify = (str = "") =>
+  str.toString().toLowerCase().trim()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+
 function Categories() {
-  const { categoryId } = useParams()
+  const { categorySlug } = useParams()
 
-  const [categories, setCategories] = useState([])
-  const [products, setProducts]     = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState("")
+  const [categories, setCategories]             = useState([])
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false)
+  const [products, setProducts]                 = useState([])
+  const [loading, setLoading]                   = useState(true)
+  const [error, setError]                       = useState("")
 
+  // Step 1: Sidebar ke liye saari categories ek hi baar load karo
   useEffect(() => {
     getWebsiteCategories()
       .then(res => setCategories(res.data || []))
       .catch(() => {})
+      .finally(() => setCategoriesLoaded(true))
   }, [])
 
+  // URL me jo slug hai, usse match hone wali category dhoondo
+  const activeCategory = categories.find(c => slugify(c.category_name) === categorySlug)
+
+  // Step 2: Categories load hone ke baad hi products fetch karo
+  // (taaki slug -> category id sahi se resolve ho sake)
   useEffect(() => {
+    if (!categoriesLoaded) return
+
     const load = async () => {
       setLoading(true); setError("")
       try {
+        const categoryId = categorySlug ? activeCategory?.id : null
         const res = await getProductsByCategory(categoryId || null)
         setProducts(res.data || [])
       } catch (err) {
@@ -34,9 +52,7 @@ function Categories() {
       }
     }
     load()
-  }, [categoryId])
-
-  const activeCategory = categories.find(c => String(c.id) === String(categoryId))
+  }, [categoriesLoaded, categorySlug, activeCategory?.id])
 
   const getPrice = (product) => {
     const v = product.variants?.[0]
@@ -78,14 +94,20 @@ function Categories() {
                 <div className="shop-widget">
                   <h5 className="widget-title">Product categories</h5>
                   <ul className="product-categorie">
-                    <li className={`product-categorie-item ${!categoryId ? "active" : ""}`}>
-                      <Link to="/categories">All Categories</Link>
+                    <li className={`product-categorie-item ${!categorySlug ? "active" : ""}`}>
+                      <Link to="/categories" style={!categorySlug ? { color: "#0e606c", fontWeight: 700 } : undefined}>All Categories</Link>
                     </li>
-                    {categories.map(cat => (
-                      <li key={cat.id} className={`product-categorie-item ${String(cat.id) === String(categoryId) ? "active" : ""}`}>
-                        <Link to={`/categories/${cat.id}`}>{cat.category_name}</Link>
-                      </li>
-                    ))}
+                    {categories.map(cat => {
+                      const slug = slugify(cat.category_name)
+                      const isActive = slug === categorySlug
+                      return (
+                        <li key={cat.id} className={`product-categorie-item ${isActive ? "active" : ""}`}>
+                          <Link to={`/categories/${slug}`} style={isActive ? { color: "#0e606c", fontWeight: 700 } : undefined}>
+                            {cat.category_name}
+                          </Link>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               </div>
@@ -115,7 +137,7 @@ function Categories() {
                   <div className="shop-product-wrapper ms-lg-4 border-top border-start row gx-0 archive-products">
                     {products.map(p => (
                       <div key={p.id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6">
-                        <Link to={`/product/${p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
                           <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
                         </Link>
                       </div>
@@ -133,16 +155,15 @@ function Categories() {
         {/* inner Page End */}
 
         {/* Contact Banner */}
-      <ContactBanner />
+        <ContactBanner />
 
-      {/* Newsletter */}
-      <Newsletter />
+        {/* Newsletter */}
+        <Newsletter />
 
-      {/* Features */}
-      <FeatureIcons />
+        {/* Features */}
+        <FeatureIcons />
 
       </main>
-
     </>
   )
 }

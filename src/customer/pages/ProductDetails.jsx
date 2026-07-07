@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom"
 import { getProductDetails } from "../../utils/websiteApi"
 
 function ProductDetails() {
-  const { id } = useParams()
+  const { slug } = useParams()
   const [product, setProduct]   = useState(null)
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState("")
@@ -14,7 +14,7 @@ function ProductDetails() {
     const load = async () => {
       setLoading(true); setError("")
       try {
-        const res = await getProductDetails(id)
+        const res = await getProductDetails(slug)
         setProduct(res.data)
         setActiveImage(res.data?.primary_image?.image_url || null)
       } catch (err) {
@@ -24,7 +24,7 @@ function ProductDetails() {
       }
     }
     load()
-  }, [id])
+  }, [slug])
 
   if (loading) {
     return (

@@ -34,6 +34,6 @@ export const getWebsiteContact  = () => post("/contact")
 export const getWebsiteSocial   = () => post("/social")
 export const getWebsiteLogo     = () => post("/logo")
 export const getWebsiteSliders  = () => post("/sliders")
-export const getProductDetails = (id) => post(`/products/${id}`)
+export const getProductDetails = (slug) => post(`/products/${slug}`)
 
 export const getProductsByCategory = (categoryId) => post("/products", categoryId ? { category_id: categoryId } : null)
