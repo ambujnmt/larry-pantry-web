@@ -7,7 +7,7 @@ import FeatureIcons from "../components/FeatureIcons";
 import ProductCard from "../components/ProductCard";
 import { getWebsiteCategories, getProductsByCategory } from "../../utils/websiteApi";
 
-// Category name ko URL-friendly bana deta hai: "Fresh Vegetables" -> "fresh-vegetables"
+// This makes the category name URL-friendly: "Fresh Vegetables" -> "fresh-vegetables"
 const slugify = (str = "") =>
   str.toString().toLowerCase().trim()
     .replace(/&/g, "and")
@@ -23,7 +23,7 @@ function Categories() {
   const [loading, setLoading]                   = useState(true)
   const [error, setError]                       = useState("")
 
-  // Step 1: Sidebar ke liye saari categories ek hi baar load karo
+  // Step 1: Load all categories for the sidebar at once.
   useEffect(() => {
     getWebsiteCategories()
       .then(res => setCategories(res.data || []))
@@ -31,11 +31,11 @@ function Categories() {
       .finally(() => setCategoriesLoaded(true))
   }, [])
 
-  // URL me jo slug hai, usse match hone wali category dhoondo
+  // Find the category that matches the slug in the URL.
   const activeCategory = categories.find(c => slugify(c.category_name) === categorySlug)
 
-  // Step 2: Categories load hone ke baad hi products fetch karo
-  // (taaki slug -> category id sahi se resolve ho sake)
+  // Step 2: Retrieve products only after the categories have loaded.
+  // (so that the slug -> category ID can be correctly resolved)
   useEffect(() => {
     if (!categoriesLoaded) return
 
@@ -59,7 +59,7 @@ function Categories() {
     return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
   }
   const getImage = (product) =>
-    product.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+    product.primary_image?.image_url || "/assets/img/no-image.jpg"
 
   return (
     <>
