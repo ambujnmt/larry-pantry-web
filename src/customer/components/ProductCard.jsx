@@ -26,7 +26,7 @@ function ProductCard({ name, price, image }) {
             style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
           />
         </a>
-        <ul className="single-product-item-action">
+        {/*<ul className="single-product-item-action">
           <li className="single-product-item-action-list">
             <a href="#" className="single-product-item-action-link">
               <i className="icon-rt-heart2"></i>
@@ -37,7 +37,7 @@ function ProductCard({ name, price, image }) {
               <i className="icon-rt-eye2"></i>
             </a>
           </li>
-        </ul>
+        </ul>*/}
       </div>
       <div className="single-product-item-content">
         <div className="single-product-item-rating">

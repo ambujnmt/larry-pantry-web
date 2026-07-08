@@ -9,13 +9,13 @@ function ContactBanner() {
 
             <div className="col-md-6">
               <div className="inner-image">
-                <img src="assets/img/img2.avif" alt="banner" />
+                <img src="/assets/img/img2.avif" alt="banner" />
               </div>
             </div>
 
             <div className="col-md-6">
               <div className="inner-image">
-                <img src="assets/img/img3.avif" alt="banner" />
+                <img src="/assets/img/img3.avif" alt="banner" />
               </div>
             </div>
 

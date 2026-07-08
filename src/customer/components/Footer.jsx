@@ -1,5 +1,6 @@
 // src/customer/components/Footer.jsx
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { getWebsiteSocial, getWebsiteLogo } from "../../utils/websiteApi";
 
 function Footer() {
@@ -71,11 +72,11 @@ function Footer() {
               <div className="footer-widget">
                 <h6 className="footer-title">INFORMATION</h6>
                 <ul className="footer-list">
-                  <li><a href="#">Contact us</a></li>
-                  <li><a href="/about">About us</a></li>
-                  <li><a href="#">Privacy Policy</a></li>
-                  <li><a href="#">Wishlist</a></li>
-                  <li><a href="#">Checkout</a></li>
+                  <li><Link to="/">Home</Link></li>
+                  <li><Link to="/about">About us</Link></li>
+                  <li><Link to="#">Privacy Policy</Link></li>
+                  {/*<li><Link to="#">Wishlist</Link></li>*/}
+                  <li><Link to="/customer">Orders</Link></li>
                 </ul>
               </div>
             </div>
@@ -84,12 +85,10 @@ function Footer() {
               <div className="footer-widget">
                 <h6 className="footer-title">Quick Links</h6>
                 <ul className="footer-list">
-                  <li><a href="#">Home</a></li>
-                  <li><a href="#">Food Menu</a></li>
-                  <li><a href="/categories">Categories</a></li>
-                  <li><a href="#">Special Offers / Deals</a></li>
-                  <li><a href="#">Gallery</a></li>
-                  <li><a href="/contact">Contact Us</a></li>
+                  <li><Link to="#">Food Menu</Link></li>
+                  <li><Link to="/categories">Categories</Link></li>
+                  <li><Link to="#">Special Offers / Deals</Link></li>
+                  <li><Link to="/qa">Q & A</Link></li>
                 </ul>
               </div>
             </div>
@@ -98,8 +97,8 @@ function Footer() {
               <div className="footer-widget">
                 <h6 className="footer-title">MY ACCOUNT</h6>
                 <ul className="footer-list">
-                  <li><a href="#">Login</a></li>
-                  <li><a href="#">Register</a></li>
+                  <li><Link to="/customer">Login</Link></li>
+                  <li><Link to="/contact">Contact Us</Link></li>
                 </ul>
               </div>
             </div>
@@ -112,7 +111,7 @@ function Footer() {
           <div className="copy-right-content text-center">
             <p>
               © Copyright 2026. All Rights Reserved. Powered By{" "}
-              <a href="https://www.nmttechnologies.com/">NMT Technologies</a>
+              <a href="https://www.nmttechnologies.com/" target="_blank">NMT Technologies</a>
             </p>
           </div>
         </div>

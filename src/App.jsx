@@ -5,6 +5,7 @@ import Footer from "./customer/components/Footer";
 import Home from "./customer/pages/Home";
 import Contact from "./customer/pages/Contact";
 import About from "./customer/pages/About";
+import Qa from "./customer/pages/Qa";
 import Categories from "./customer/pages/Categories";
 import ProductDetails from "./customer/pages/ProductDetails"
 /*----- Customer Portal ------*/
@@ -45,6 +46,7 @@ function App() {
         <Route path="/" element={<><Header /><Home /><Footer /></>} />
         <Route path="/contact" element={<><Header /><Contact /><Footer /></>} />
         <Route path="/about" element={<><Header /><About /><Footer /></>} />
+        <Route path="/qa" element={<><Header /><Qa /><Footer /></>} />
         <Route path="/categories" element={<><Header /><Categories /><Footer /></>} />
         <Route path="/categories/:categorySlug" element={<><Header /><Categories /><Footer /></>} />
         <Route path="/product/:slug" element={<><Header /><ProductDetails /><Footer /></>} />
