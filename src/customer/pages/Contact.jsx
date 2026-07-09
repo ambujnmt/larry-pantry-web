@@ -68,7 +68,7 @@ function Contact() {
                           {/*For immediate help please call <br />*/}
                           <a href={`tel:${contact.phone}`}>{contact.phone}</a>
                         </p>
-                      </div>
+                      </div> 
                     </li>
                   )}
 
