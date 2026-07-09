@@ -226,7 +226,7 @@ function About() {
       <Newsletter />
 
       {/* Features */}
-      <FeatureIcons />
+      {/*<FeatureIcons />*/}
 
     </main>
   );

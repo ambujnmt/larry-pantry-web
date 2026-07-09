@@ -161,7 +161,7 @@ function Categories() {
         <Newsletter />
 
         {/* Features */}
-        <FeatureIcons />
+        {/*<FeatureIcons />*/}
 
       </main>
     </>

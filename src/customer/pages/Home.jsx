@@ -308,7 +308,7 @@ function Home() {
       <Newsletter />
 
       {/* Features */}
-      {/* <FeatureIcons /> */}
+      {/*<FeatureIcons />*/}
 
     </main>
   );

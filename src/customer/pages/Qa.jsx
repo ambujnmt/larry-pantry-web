@@ -151,7 +151,7 @@ function Faq() {
       {/* Bottom Banners */}
       <ContactBanner />
       <Newsletter />
-      <FeatureIcons />
+      {/*<FeatureIcons />*/}
     </main>
   );
 }
