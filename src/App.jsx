@@ -35,6 +35,7 @@ import ContactSetting from "./admin/pages/ContactSetting"
 import SocialMedia    from "./admin/pages/SocialMedia"
 import LogoSetting    from "./admin/pages/LogoSetting"
 import Sliders from "./admin/pages/Sliders"
+import Messages from "./admin/pages/Messages"
 /*------------------------*/
 
 function App() {
@@ -84,6 +85,7 @@ function App() {
         <Route path="/admin/settings/social-media" element={<DashboardLayout><SocialMedia /></DashboardLayout>} />
         <Route path="/admin/settings/logo"         element={<DashboardLayout><LogoSetting /></DashboardLayout>} />
         <Route path="/admin/sliders" element={<DashboardLayout><Sliders /></DashboardLayout>} />
+        <Route path="/admin/messages" element={<DashboardLayout><Messages /></DashboardLayout>}/>
 
 
       </Routes>
