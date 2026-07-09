@@ -158,3 +158,9 @@ export const createSlider = (formData) => formRequest("/admin/sliders", formData
 export const updateSlider = (id, formData) => formRequest(`/admin/sliders/${id}`, formData)
 export const deleteSlider = (id) => client(`/admin/sliders/${id}`, { method: "DELETE", auth: true })
 export const updateSliderStatus = (id, status) => client(`/admin/sliders/${id}/status`, { method: "POST", auth: true, body: { status } })
+
+// ─── Contact Messages ─────────────────────────────────────────────────────────
+
+export const getContactMessages   = ()   => client("/admin/messages", { auth: true })
+export const getContactMessage    = (id) => client(`/admin/messages/${id}`, { auth: true })
+export const deleteContactMessage = (id) => client(`/admin/messages/${id}`, { method: "DELETE", auth: true })
