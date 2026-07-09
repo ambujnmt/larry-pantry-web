@@ -1,7 +1,8 @@
 // src/customer/pages/ProductDetails.jsx
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
-import { getProductDetails } from "../../utils/websiteApi"
+import { getProductDetails, getProductsByCategory } from "../../utils/websiteApi"
+import ProductCard from "../components/ProductCard"
 
 function ProductDetails() {
   const { slug } = useParams()
@@ -9,6 +10,10 @@ function ProductDetails() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState("")
   const [activeImage, setActiveImage] = useState(null)
+
+  const [related, setRelated]         = useState([])
+  const [relatedLoading, setRelatedLoading] = useState(false)
+  const scrollerRef = useRef(null)
 
   useEffect(() => {
     const load = async () => {
@@ -25,6 +30,42 @@ function ProductDetails() {
     }
     load()
   }, [slug])
+
+  // Related products: same category, current product excluded
+  useEffect(() => {
+    if (!product) return
+    const categoryId = product.category_id || product.category?.id
+    if (!categoryId) { setRelated([]); return }
+
+    const loadRelated = async () => {
+      setRelatedLoading(true)
+      try {
+        const res = await getProductsByCategory(categoryId)
+        const list = (res.data || []).filter(
+          p => p.id !== product.id && (p.slug || p.id) !== slug
+        )
+        setRelated(list)
+      } catch {
+        setRelated([])
+      } finally {
+        setRelatedLoading(false)
+      }
+    }
+    loadRelated()
+  }, [product, slug])
+
+  const scrollByCards = (dir) => {
+    const el = scrollerRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: "smooth" })
+  }
+
+  const getPrice = (p) => {
+    const v = p.variants?.[0]
+    return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
+  }
+  const getImage = (p) =>
+    p.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
 
   if (loading) {
     return (
@@ -119,6 +160,79 @@ function ProductDetails() {
           </Link>
         </div>
       </div>
+
+      {/* Related Products */}
+      {!relatedLoading && related.length > 0 && (
+        <section className="mt-5 pt-4 border-top">
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <div>
+              <h4 className="fw-bold mb-0">Related Products</h4>
+              {product.category_name && (
+                <small className="text-muted">More from {product.category_name}</small>
+              )}
+            </div>
+            <div className="d-none d-md-flex gap-2">
+              <button
+                type="button"
+                onClick={() => scrollByCards(-1)}
+                className="btn btn-sm btn-outline-secondary rounded-circle"
+                style={{ width: 36, height: 36 }}
+                aria-label="Scroll left"
+              >
+                <i className="fa fa-chevron-left" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollByCards(1)}
+                className="btn btn-sm btn-outline-secondary rounded-circle"
+                style={{ width: 36, height: 36 }}
+                aria-label="Scroll right"
+              >
+                <i className="fa fa-chevron-right" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            ref={scrollerRef}
+            className="d-flex gap-3 pb-2"
+            style={{
+              overflowX: "auto",
+              scrollSnapType: "x mandatory",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+            }}
+          >
+            {related.map(p => (
+              <div
+                key={p.id}
+                style={{
+                  flex: "0 0 auto",
+                  width: 190,
+                  scrollSnapAlign: "start",
+                }}
+              >
+                <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <div
+                    className="border rounded-3 h-100 bg-white"
+                    style={{ transition: "box-shadow .2s, transform .2s" }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)"
+                      e.currentTarget.style.transform = "translateY(-2px)"
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.boxShadow = "none"
+                      e.currentTarget.style.transform = "translateY(0)"
+                    }}
+                  >
+                    <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   )
 }

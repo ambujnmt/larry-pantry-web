@@ -90,7 +90,7 @@ function Contact() {
 
 
       {/* Google Map Start */}
-      <div className="ifram-map-wrapper">
+      {/*<div className="ifram-map-wrapper">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d14008.49392963452!2d77.367603!3d28.626060999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1778149750832!5m2!1sen!2sin"
           width="100%"
@@ -101,7 +101,7 @@ function Contact() {
           referrerPolicy="no-referrer-when-downgrade"
           title="Google Map"
         ></iframe>
-      </div>
+      </div>*/}
       {/* Google Map End */}
 
 
@@ -112,7 +112,7 @@ function Contact() {
       <Newsletter />
 
       {/* Features */}
-      <FeatureIcons />
+      {/*<FeatureIcons />*/}
 
     </main>
   );

@@ -48,7 +48,7 @@ function Home() {
     load()
   }, [])
 
-  // Bootstrap carousel — sliders load hone ke baad auto-start
+  // Bootstrap carousel — auto-start after loading sliders
   useEffect(() => {
     if (sliders.length === 0) return
     const timer = setTimeout(() => {
@@ -65,7 +65,7 @@ function Home() {
     return () => clearTimeout(timer)
   }, [sliders])
 
-  // Slick sliders — categories/products data load hone ke baad
+  // Slick sliders — after loading categories/products
   useEffect(() => {
     if (!dataLoaded) return
     const $ = window.$
@@ -151,7 +151,7 @@ function Home() {
   const getImage = (product) =>
     product.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
 
-  // Best sellers me jo categories products hain, unme se max 5 random category nikalo
+  //Select up to 5 random categories from the product categories listed under 'Best Sellers'.
   const bestSellerCategories = useMemo(() => {
     const map = {}
     bestSellers.forEach(p => {
@@ -303,6 +303,12 @@ function Home() {
 
       {/* Contact Banner */}
       <ContactBanner />
+
+      {/* Newsletter */}
+      <Newsletter />
+
+      {/* Features */}
+      {/*<FeatureIcons />*/}
 
     </main>
   );
