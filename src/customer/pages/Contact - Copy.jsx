@@ -1,28 +1,10 @@
 // src/customer/pages/Contact.jsx
-import { useState, useEffect } from "react";
-import { getWebsiteContact } from "../../utils/websiteApi";
 import Breadcrumb from "../components/Breadcrumb";
 import ContactBanner from "../components/ContactBanner";
 import Newsletter from "../components/Newsletter";
 import FeatureIcons from "../components/FeatureIcons";
 
 function Contact() {
-  // Dynamic contact state initialize kiya
-  const [contact, setContact] = useState({ phone: "", email: "", address: "" });
-
-  // Header ki tarah contact data load karne ke liye useEffect
-  useEffect(() => {
-    const loadContactData = async () => {
-      try {
-        const contactRes = await getWebsiteContact();
-        setContact(contactRes.data || {});
-      } catch (e) {
-        console.error("Contact page data load failed:", e);
-      }
-    };
-    loadContactData();
-  }, []);
-
   return (
     <main>
 
@@ -42,51 +24,38 @@ function Contact() {
                 <h2 className="fw-bold mb-3">Let us know how we can help</h2>
                 <p>Please contact us using the below options. For fastest reply, please include your name, organization, appropriate contact information and a brief summary of your inquiry.</p>
                 <ul className="mt-5">
-                  
-                  {/* 1. Mailing Address (Client Requirement: Office Location -> Mailing Address) */}
-                  {contact.address && (
-                    <li className="contact-feature-item">
-                      <div className="contact-feature-icon">
-                        <i className="icon-rt-location-pin"></i>
-                      </div>
-                      <div className="contact-feature-content">
-                        <h5 className="contact-feature-title fw-bold mb-1">Mailing Address</h5>
-                        <p style={{ whiteSpace: "pre-line" }}>{contact.address}</p>
-                      </div>
-                    </li>
-                  )}
-
-                  {/* 2. Call us anytime */}
-                  {contact.phone && (
-                    <li className="contact-feature-item">
-                      <div className="contact-feature-icon feature-icon-2">
-                        <i className="icon-rt-phone-volume-solid"></i>
-                      </div>
-                      <div className="contact-feature-content">
-                        <h5 className="contact-feature-title fw-bold mb-1">Call us anytime</h5>
-                        <p>
-                          {/*For immediate help please call <br />*/}
-                          <a href={`tel:${contact.phone}`}>{contact.phone}</a>
-                        </p>
-                      </div>
-                    </li>
-                  )}
-
-                  {/* 3. Send Email (Client Requirement: Send Mail -> Send Email) */}
-                  {contact.email && (
-                    <li className="contact-feature-item">
-                      <div className="contact-feature-icon feature-icon-3">
-                        <i className="icon-rt-mail-outline"></i>
-                      </div>
-                      <div className="contact-feature-content">
-                        <h5 className="contact-feature-title fw-bold mb-1">Send Email</h5>
-                        <p>
-                          <a href={`mailto:${contact.email}`}>{contact.email}</a>
-                        </p>
-                      </div>
-                    </li>
-                  )}
-
+                  <li className="contact-feature-item">
+                    <div className="contact-feature-icon">
+                      <i className="icon-rt-location-pin"></i>
+                    </div>
+                    <div className="contact-feature-content">
+                      <h5 className="contact-feature-title fw-bold mb-1">Office Location</h5>
+                      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                    </div>
+                  </li>
+                  <li className="contact-feature-item">
+                    <div className="contact-feature-icon feature-icon-2">
+                      <i className="icon-rt-phone-volume-solid"></i>
+                    </div>
+                    <div className="contact-feature-content">
+                      <h5 className="contact-feature-title fw-bold mb-1">Call us anytime</h5>
+                      <p>For immediate help please call <br />
+                        +91-0123456789, +91-0123456789</p>
+                    </div>
+                  </li>
+                  <li className="contact-feature-item">
+                    <div className="contact-feature-icon feature-icon-3">
+                      <i className="icon-rt-mail-outline"></i>
+                    </div>
+                    <div className="contact-feature-content">
+                      <h5 className="contact-feature-title fw-bold mb-1">Send Mail</h5>
+                      <p>
+                        <a href="#">support1@demo.com</a>
+                        <br />
+                        <a href="#">support2@demo.com</a>
+                      </p>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
