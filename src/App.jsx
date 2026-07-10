@@ -8,6 +8,7 @@ import About from "./customer/pages/About";
 import Qa from "./customer/pages/Qa";
 import Categories from "./customer/pages/Categories";
 import ProductDetails from "./customer/pages/ProductDetails"
+import SearchResults from "./customer/pages/SearchResults";
 /*----- Customer Portal ------*/
 import CustomerLogin            from "./customer/pages/CustomerLogin";
 import CustomerDashboardLayout  from "./customer/layouts/CustomerDashboardLayout";
@@ -36,6 +37,7 @@ import SocialMedia    from "./admin/pages/SocialMedia"
 import LogoSetting    from "./admin/pages/LogoSetting"
 import Sliders from "./admin/pages/Sliders"
 import Messages from "./admin/pages/Messages"
+import Newsletter from "./admin/pages/Newsletter"
 /*------------------------*/
 
 function App() {
@@ -51,6 +53,7 @@ function App() {
         <Route path="/categories" element={<><Header /><Categories /><Footer /></>} />
         <Route path="/categories/:categorySlug" element={<><Header /><Categories /><Footer /></>} />
         <Route path="/product/:slug" element={<><Header /><ProductDetails /><Footer /></>} />
+        <Route path="/search" element={<><Header /><SearchResults  /><Footer /></>} />
 
         {/* Customer Portal Routes */}
         <Route path="/customer"     element={<CustomerLogin />} />
@@ -86,6 +89,7 @@ function App() {
         <Route path="/admin/settings/logo"         element={<DashboardLayout><LogoSetting /></DashboardLayout>} />
         <Route path="/admin/sliders" element={<DashboardLayout><Sliders /></DashboardLayout>} />
         <Route path="/admin/messages" element={<DashboardLayout><Messages /></DashboardLayout>}/>
+        <Route path="/admin/newsletter" element={<DashboardLayout><Newsletter /></DashboardLayout>}/>
 
 
       </Routes>

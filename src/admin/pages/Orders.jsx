@@ -79,12 +79,12 @@ function Orders() {
     }
 
     updateOrderStatus(order.id, newStatus, "")
-      .catch(() => {
+      .catch(err => {
         setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: prevStatus } : o))
         if (selectedOrder?.id === order.id) {
           setSelectedOrder(prev => ({ ...prev, status: prevStatus }))
         }
-        alert("Status could not be updated. Try again.")
+        alert(err.message) 
       })
       .finally(() => setUpdatingId(null))
   }

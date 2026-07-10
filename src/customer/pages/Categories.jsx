@@ -23,7 +23,6 @@ function Categories() {
   const [loading, setLoading]                   = useState(true)
   const [error, setError]                       = useState("")
 
-  // Step 1: Load all categories for the sidebar at once.
   useEffect(() => {
     getWebsiteCategories()
       .then(res => setCategories(res.data || []))
@@ -31,11 +30,8 @@ function Categories() {
       .finally(() => setCategoriesLoaded(true))
   }, [])
 
-  // Find the category that matches the slug in the URL.
   const activeCategory = categories.find(c => slugify(c.category_name) === categorySlug)
 
-  // Step 2: Retrieve products only after the categories have loaded.
-  // (so that the slug -> category ID can be correctly resolved)
   useEffect(() => {
     if (!categoriesLoaded) return
 
@@ -63,6 +59,88 @@ function Categories() {
 
   return (
     <>
+      <style>{`
+        .cat-rail-wrapper {
+          display: flex;
+          align-items: flex-start;
+        }
+        .cat-rail {
+          flex: 0 0 84px;
+          width: 84px;
+          background: #f7f8f9;
+          border-right: 1px solid #ececec;
+          position: sticky;
+          top: 0;
+          align-self: flex-start;
+          max-height: calc(100vh - 20px);
+          overflow-y: auto;
+          scrollbar-width: none;
+        }
+        .cat-rail::-webkit-scrollbar { display: none; }
+        .cat-rail-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 6px;
+          padding: 14px 6px;
+          cursor: pointer;
+          text-decoration: none;
+          color: #444;
+          border-left: 3px solid transparent;
+          font-size: 11px;
+          line-height: 1.2;
+          transition: background .15s, border-color .15s;
+        }
+        .cat-rail-item:hover { background: #eef2f2; }
+        .cat-rail-item.active {
+          background: #ffffff;
+          border-left-color: #0e606c;
+          color: #0e606c;
+          font-weight: 700;
+        }
+        .cat-rail-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          object-fit: cover;
+          background: #e9ecef;
+        }
+        .cat-rail-icon-fallback {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: #dcecec;
+          color: #0e606c;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 16px;
+        }
+        .cat-products-area {
+          flex: 1 1 auto;
+          min-width: 0;
+          padding: 16px 12px;
+        }
+        @media (min-width: 768px) {
+          .cat-rail { flex-basis: 130px; width: 130px; }
+          .cat-rail-item { font-size: 12.5px; padding: 16px 8px; }
+          .cat-rail-icon, .cat-rail-icon-fallback { width: 50px; height: 50px; }
+          .cat-products-area { padding: 24px; }
+        }
+        @media (min-width: 992px) {
+          .cat-rail { flex-basis: 220px; width: 220px; }
+          .cat-rail-item {
+            flex-direction: row;
+            justify-content: flex-start;
+            text-align: left;
+            font-size: 14px;
+            padding: 12px 16px;
+          }
+        }
+      `}</style>
+
       <main>
 
         {/* Breadcrumb Start */}
@@ -84,83 +162,86 @@ function Categories() {
         </section>
         {/* Breadcrumb End */}
 
-        {/* inner Page */}
-        <section className="page-secton-wrapper section-space-pb">
-          <div className="container">
-            <div className="row">
+        {/* inner Page — Blinkit-style split layout */}
+        <section className="page-secton-wrapper">
+          <div className="cat-rail-wrapper">
 
-              {/* Sidebar — dynamic category list */}
-              <div className="col-lg-3 col-12 sidebar widget-area-side left-sidebar order-2 order-lg-1">
-                <div className="shop-widget">
-                  <h5 className="widget-title">Product categories</h5>
-                  <ul className="product-categorie">
-                    <li className={`product-categorie-item ${!categorySlug ? "active" : ""}`}>
-                      <Link to="/categories" style={!categorySlug ? { color: "#0e606c", fontWeight: 700 } : undefined}>All Categories</Link>
-                    </li>
-                    {categories.map(cat => {
-                      const slug = slugify(cat.category_name)
-                      const isActive = slug === categorySlug
-                      return (
-                        <li key={cat.id} className={`product-categorie-item ${isActive ? "active" : ""}`}>
-                          <Link to={`/categories/${slug}`} style={isActive ? { color: "#0e606c", fontWeight: 700 } : undefined}>
-                            {cat.category_name}
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
+            {/* Category Rail (always beside products, never below) */}
+            <div className="cat-rail pb-2">
+              <Link
+                to="/categories"
+                className={`cat-rail-item ${!categorySlug ? "active" : ""}`}
+              >
+                <span className="cat-rail-icon-fallback">All</span>
+                <span>All Items</span>
+              </Link>
+
+              {categories.map(cat => {
+                const slug = slugify(cat.category_name)
+                const isActive = slug === categorySlug
+                return (
+                  <Link
+                    key={cat.id}
+                    to={`/categories/${slug}`}
+                    className={`cat-rail-item ${isActive ? "active" : ""}`}
+                  >
+                    {cat.image ? (
+                      <img
+                        src={cat.image}
+                        alt=""
+                        className="cat-rail-icon"
+                        onError={e => { e.target.onerror = null; e.target.src = "/assets/img/no-image.jpg" }}
+                      />
+                    ) : (
+                      <span className="cat-rail-icon-fallback">
+                        {cat.category_name?.charAt(0)}
+                      </span>
+                    )}
+                    <span>{cat.category_name}</span>
+                  </Link>
+                )
+              })}
+            </div>
+            {/* Category Rail End */}
+
+            {/* Products Area */}
+            <div className="cat-products-area">
+
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <p className="mb-0 text-muted">
+                  {loading ? "Loading..." : `Showing ${products.length} result${products.length !== 1 ? "s" : ""}`}
+                </p>
               </div>
-              {/* Sidebar End */}
 
-              {/* Products Area */}
-              <div className="col-lg-9 col-12 order-1 order-lg-2">
-
-                {/* Shop Toolbar */}
-                <div className="shop-toolbar-wrapper ms-lg-4 mb-3">
-                  <div className="page_amount">
-                    <p>{loading ? "Loading..." : `Showing ${products.length} result${products.length !== 1 ? "s" : ""}`}</p>
-                  </div>
+              {loading ? (
+                <div className="text-center py-5">
+                  <span className="spinner-border" style={{ color: "#0e606c" }} />
                 </div>
-                {/* Shop Toolbar End */}
-
-                {/* Products Grid */}
-                {loading ? (
-                  <div className="text-center py-5">
-                    <span className="spinner-border" style={{ color: "#0e606c" }} />
-                  </div>
-                ) : error ? (
-                  <div className="text-center text-danger py-5">{error}</div>
-                ) : products.length === 0 ? (
-                  <div className="text-center text-muted py-5">No products found in this category.</div>
-                ) : (
-                  <div className="shop-product-wrapper ms-lg-4 border-top border-start row gx-0 archive-products">
-                    {products.map(p => (
-                      <div key={p.id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6">
-                        <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                          <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* Products Grid End */}
-
-              </div>
-              {/* Products Area End */}
+              ) : error ? (
+                <div className="text-center text-danger py-5">{error}</div>
+              ) : products.length === 0 ? (
+                <div className="text-center text-muted py-5">No products found in this category.</div>
+              ) : (
+                <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
+                  {products.map(p => (
+                    <div key={p.id} className="col">
+                      <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
 
             </div>
+            {/* Products Area End */}
+
           </div>
         </section>
         {/* inner Page End */}
 
-        {/* Contact Banner */}
         <ContactBanner />
-
-        {/* Newsletter */}
         <Newsletter />
-
-        {/* Features */}
         {/*<FeatureIcons />*/}
 
       </main>

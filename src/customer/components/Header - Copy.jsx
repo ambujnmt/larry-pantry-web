@@ -9,7 +9,6 @@ function Header() {
   const [social, setSocial]   = useState({ facebook: "", instagram: "", twitter: "", youtube: "", linkedin: "" })
   const [logoUrl, setLogoUrl] = useState("/assets/img/logo.png")
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen]     = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -28,22 +27,6 @@ function Header() {
     }
     load()
   }, [])
-
-  // Mobile menu khula ho to background scroll lock
-  useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : ""
-    return () => { document.body.style.overflow = "" }
-  }, [mobileMenuOpen])
-
-  const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/about", label: "About Us" },
-    { to: "#", label: "Food Menu" },
-    { to: "/categories", label: "Categories" },
-    { to: "#", label: "Special Offers / Deals" },
-    { to: "/qa", label: "Q & A" },
-    { to: "/contact", label: "Contact Us" },
-  ]
 
   return (
     <header className="header">
@@ -149,11 +132,7 @@ function Header() {
             <div className="col mobile-header-start">
               <div className="d-flex gap-2">
                 <div className="menu-mobile">
-                  
-                  <a  href="#moible-menu"
-                    className="m-menu-btn mobile-menu-active"
-                    onClick={e => { e.preventDefault(); setMobileMenuOpen(true) }}
-                  >
+                  <a href="#moible-menu" className="m-menu-btn mobile-menu-active">
                     <i className="icon-rt-bars-solid"></i>
                   </a>
                 </div>
@@ -170,90 +149,16 @@ function Header() {
                     <div className="mobile-search-panel">
                       <SearchBox
                         variant="mobile"
-                        onNavigate={() => setMobileSearchOpen(false)}
+                        onNavigate={() => setMobileSearchOpen(false)} 
                       />
                     </div>
                   )}
                 </div>
               </div>
             </div>
-
-            <div className="col mobile-header-mobile">
-              <div className="logo text-center">
-                <Link to="/"><img src={logoUrl} alt="Logo" onError={e => { e.target.onerror = null; e.target.src = "/assets/img/logo.png" }} /></Link>
-              </div>
-            </div>
-
-            <div className="col mobile-header-right">
-              <div className="header-middle-right-area">
-                <div className="my-account">
-                  <Link to="/customer/login" className="header-action-item">
-                    <i className="icon-rt-user"></i>
-                  </Link>
-                </div>
-                <div className="cart">
-                  <a href="#" className="header-action-item toolbar-btn">
-                    <i className="icon-rt-basket-outline"></i>
-                    <span className="wishlist-count">3</span>
-                  </a>
-                </div>
-              </div>
-            </div>
+            {/* baaki mobile header same rahega */}
           </div>
         </div>
-      </div>
-
-      {/* ========== MOBILE OFFCANVAS MENU ========== */}
-      <div
-        className={`offcanvas-menu-overlay ${mobileMenuOpen ? "active" : ""}`}
-        onClick={() => setMobileMenuOpen(false)}
-        style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-          zIndex: 1040, display: mobileMenuOpen ? "block" : "none",
-        }}
-      />
-      <div
-        id="moible-menu"
-        className={`offcanvas-mobile-menu ${mobileMenuOpen ? "active" : ""}`}
-        style={{
-          position: "fixed", top: 0, left: 0, height: "100vh", width: 280,
-          background: "#fff", zIndex: 1050, padding: "20px",
-          transform: mobileMenuOpen ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 0.3s ease", boxShadow: "2px 0 12px rgba(0,0,0,0.15)",
-          overflowY: "auto",
-        }}
-      >
-        <button
-          type="button"
-          className="btn-close-offcanvas"
-          onClick={() => setMobileMenuOpen(false)}
-          style={{ background: "none", border: "none", fontSize: 22, marginBottom: 20 }}
-          aria-label="Close menu"
-        >
-          ✕
-        </button>
-
-        <nav className="offcanvas-navigation">
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {navLinks.map(link => (
-              <li key={link.label} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                <Link
-                  to={link.to}
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ display: "block", padding: "14px 4px", color: "#333", textDecoration: "none", fontWeight: 500 }}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {contact.phone && (
-          <p className="mt-4">
-            <i className="icon-rt-call-outline"></i> Call Us: <a href={`tel:${contact.phone}`}>{contact.phone}</a>
-          </p>
-        )}
       </div>
 
     </header>

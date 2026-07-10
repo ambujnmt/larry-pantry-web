@@ -176,7 +176,7 @@ function ProductDetails() {
                 type="button"
                 onClick={() => scrollByCards(-1)}
                 className="btn btn-sm btn-outline-secondary rounded-circle"
-                style={{ width: 36, height: 36 }}
+                style={{ width: 32, height: 32, padding: 'unset' }}
                 aria-label="Scroll left"
               >
                 <i className="fa fa-chevron-left" />
@@ -185,7 +185,7 @@ function ProductDetails() {
                 type="button"
                 onClick={() => scrollByCards(1)}
                 className="btn btn-sm btn-outline-secondary rounded-circle"
-                style={{ width: 36, height: 36 }}
+                style={{ width: 32, height: 32, padding: 'unset' }}
                 aria-label="Scroll right"
               >
                 <i className="fa fa-chevron-right" />
