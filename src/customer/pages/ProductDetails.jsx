@@ -65,7 +65,7 @@ function ProductDetails() {
     return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
   }
   const getImage = (p) =>
-    p.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+    p.primary_image?.image_url || "/assets/img/no-image.jpg" 
 
   if (loading) {
     return (
