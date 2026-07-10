@@ -36,7 +36,7 @@ function SearchResults() {
     const v = p.variants?.[0]
     return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
   }
-  const getImage = (p) => p.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+  const getImage = (p) => p.primary_image?.image_url || "/assets/img/no-image.jpg"
 
   return (
     <main>

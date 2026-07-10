@@ -65,7 +65,7 @@ function ProductDetails() {
     return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
   }
   const getImage = (p) =>
-    p.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+    p.primary_image?.image_url || "/assets/img/no-image.jpg" 
 
   if (loading) {
     return (
@@ -85,7 +85,7 @@ function ProductDetails() {
     ? product.images
     : (product.primary_image ? [product.primary_image] : [])
 
-  const mainImg = activeImage || product.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+  const mainImg = activeImage || product.primary_image?.image_url || "/assets/img/no-image.jpg"
 
   return (
     <main className="container py-5">
@@ -98,7 +98,7 @@ function ProductDetails() {
             className="img-fluid rounded border w-100 mb-3"
             style={{ maxHeight: 400, objectFit: "cover" }}
             alt={product.name}
-            onError={e => { e.target.onerror = null; e.target.src = "assets/images/products/product-image-1-1.jpg" }}
+            onError={e => { e.target.onerror = null; e.target.src = "/assets/img/no-image.jpg" }}
           />
           {images.length > 1 && (
             <div className="d-flex gap-2 flex-wrap">
@@ -108,7 +108,7 @@ function ProductDetails() {
                   src={img.image_url}
                   alt=""
                   onClick={() => setActiveImage(img.image_url)}
-                  onError={e => { e.target.onerror = null; e.target.src = "assets/images/products/product-image-1-1.jpg" }}
+                  onError={e => { e.target.onerror = null; e.target.src = "/assets/img/no-image.jpg" }}
                   style={{
                     width: 70, height: 70, objectFit: "cover", borderRadius: 8, cursor: "pointer",
                     border: mainImg === img.image_url ? "2px solid #0e606c" : "1px solid #ddd",

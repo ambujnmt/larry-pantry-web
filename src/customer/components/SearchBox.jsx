@@ -68,7 +68,7 @@ function SearchBox({ variant = "desktop", onNavigate }) {
     onNavigate?.()
   }
 
-  const getImage = (p) => p.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+  const getImage = (p) => p.primary_image?.image_url || "/assets/img/no-image.jpg"
   const getPrice = (p) => {
     const v = p.variants?.[0]
     return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
@@ -124,7 +124,7 @@ function SearchBox({ variant = "desktop", onNavigate }) {
                     src={getImage(p)}
                     alt={p.name}
                     style={{ width: 42, height: 42, objectFit: "cover", borderRadius: 6 }}
-                    onError={e => { e.target.onerror = null; e.target.src = "assets/images/products/product-image-1-1.jpg" }}
+                    onError={e => { e.target.onerror = null; e.target.src = "/assets/img/no-image.jpg" }}
                   />
                   <div className="flex-grow-1" style={{ minWidth: 0 }}>
                     <div className="small fw-semibold text-truncate">{p.name}</div>
