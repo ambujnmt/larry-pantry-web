@@ -16,6 +16,7 @@ const NAV = [
       { to: "/admin/units",     icon: "fa-ruler",       label: "Units" },
       { to: "/admin/orders",   icon: "fa-bag-shopping", label: "All Orders" },
       { to: "/admin/messages", icon: "fa-envelope",     label: "Contact Messages" },
+      { to: "/admin/newsletter", icon: "fa-solid fa-user-check",     label: "Subscribers" },
     ],
   },
   {

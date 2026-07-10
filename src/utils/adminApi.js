@@ -164,3 +164,8 @@ export const updateSliderStatus = (id, status) => client(`/admin/sliders/${id}/s
 export const getContactMessages   = ()   => client("/admin/messages", { auth: true })
 export const getContactMessage    = (id) => client(`/admin/messages/${id}`, { auth: true })
 export const deleteContactMessage = (id) => client(`/admin/messages/${id}`, { method: "DELETE", auth: true })
+
+// ─── Newsletter Subscribers ────────────────────────────────────────────────
+
+export const getNewsletterSubscribers   = ()   => client("/admin/newsletter-subscribers", { auth: true })
+export const deleteNewsletterSubscriber = (id) => client(`/admin/newsletter-subscribers/${id}`, { method: "DELETE", auth: true })

@@ -37,5 +37,8 @@ export const getWebsiteSliders  = () => post("/sliders")
 export const getProductDetails = (slug) => post(`/products/${slug}`)
 
 export const getProductsByCategory = (categoryId) => post("/products", categoryId ? { category_id: categoryId } : null)
+export const searchProducts = (query) => post(`/products/search`, { q: query });
 
 export const submitContactForm = (data) => post("/contact/submit", data);
+// Newsletter subscribe
+export const subscribeNewsletter = (email) => post(`/newsletter/subscribe`, { email });
