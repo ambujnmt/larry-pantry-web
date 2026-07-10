@@ -149,7 +149,7 @@ function Home() {
   }
 
   const getImage = (product) =>
-    product.primary_image?.image_url || "assets/images/products/product-image-1-1.jpg"
+    product.primary_image?.image_url || "/assets/img/no-image.jpg"
 
   //Select up to 5 random categories from the product categories listed under 'Best Sellers'.
   const bestSellerCategories = useMemo(() => {
