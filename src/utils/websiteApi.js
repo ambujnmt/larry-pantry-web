@@ -1,7 +1,9 @@
 /*---- websiteApi.js ----*/
 // ─── Config ───────────────────────────────────────────────────────────────────
-
 /*-- For Live --*/
+// const API_BASE_URL = "https://restaurantpantryla.com/api/website"
+
+/*-- For Netlify --*/
 const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api/website"
 
 /*-- For Local --*/

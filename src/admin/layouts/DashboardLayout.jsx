@@ -82,6 +82,9 @@ function DashboardLayout({ children }) {
             display: inline-block !important;
             flex-shrink: 0 !important;
         }
+        table.dataTable th.dt-type-numeric, table.dataTable td.dt-type-numeric {
+            text-align: left !important;
+        }
       `}</style>
 
       <AdminHeader

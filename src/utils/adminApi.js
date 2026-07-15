@@ -1,6 +1,9 @@
 // ─── Config ───────────────────────────────────────────────────────────────────
-
 /*-- For Live --*/
+// const API_BASE_URL = "https://restaurantpantryla.com/api"
+// export const STORAGE_URL = "https://restaurantpantryla.com/admin_images/"
+
+/*-- For Netilify --*/
 const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api"
 export const STORAGE_URL = "https://site2demo.in/larry-pantry-api/admin_images/"
 
@@ -140,6 +143,13 @@ export const getAdminOrders = () => client("/admin/all-orders", { method: "POST"
 export const getAdminOrderDetail = (id) => client(`/admin/orders/${id}`, { auth: true })
 export const updateOrderStatus = (id, status, remarks = "", changed_by = null) =>  client(`/admin/orders/${id}/status`, {
     method: "POST", auth: true, body: {status, remarks, changed_by} })
+
+// NEW: upload / update (QuickBooks) invoice PDF for an order — same endpoint does both
+export const uploadOrderInvoice = (id, file) => {
+  const formData = new FormData()
+  formData.append("invoice", file)
+  return formRequest(`/admin/orders/${id}/invoice`, formData)
+}
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 

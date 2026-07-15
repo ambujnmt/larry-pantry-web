@@ -1,6 +1,9 @@
 // ─── Config ───────────────────────────────────────────────────────────────────
-
 /*-- For Live --*/
+// const API_BASE_URL = "https://restaurantpantryla.com/api/customer"
+// export const STORAGE_URL = "https://restaurantpantryla.com/admin_images/"
+
+/*-- For Netilify --*/
 const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api/customer"
 export const STORAGE_URL = "https://site2demo.in/larry-pantry-api/admin_images/"
 
