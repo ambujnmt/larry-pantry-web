@@ -191,12 +191,12 @@ function Header() {
                     <i className="icon-rt-user"></i>
                   </Link>
                 </div>
-                <div className="cart">
+                {/*<div className="cart">
                   <a href="#" className="header-action-item toolbar-btn">
                     <i className="icon-rt-basket-outline"></i>
                     <span className="wishlist-count">3</span>
                   </a>
-                </div>
+                </div>*/}
               </div>
             </div>
           </div>

@@ -1,3 +1,5 @@
+import generateInvoicePdf from "../../utils/generateInvoicePdf"
+
 const STATUS_BADGE = {
   pending:    { bg: "#fef3c7", color: "#92400e", label: "Pending" },
   confirmed:  { bg: "#dbeafe", color: "#1e40af", label: "Confirmed" },
@@ -170,7 +172,7 @@ function StatusDropdown({ status, onChange, updating }) {
   )
 }
 
-function AdminOrderDetailModal({ order, onClose, onDownload, onStatusChange, updating, loading }) {
+function AdminOrderDetailModal({ order, onClose, onUploadInvoice, uploadingInvoice, onStatusChange, updating, loading }) {
   if (!order) return null
 
   const items = order.items || order.order_items || []
@@ -183,7 +185,7 @@ function AdminOrderDetailModal({ order, onClose, onDownload, onStatusChange, upd
 
   const totalUnits = items.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0)
 
-  // Admin ke liye customer ki details (alag alag field names ho sakte hain, isliye fallback rakha hai)
+  // Fallback chain for customer details, since field names can vary across API responses
   const customerName  = order.customer_name || [order.first_name, order.last_name].filter(Boolean).join(" ") || "—"
   const customerEmail = order.email || order.customer_email || "—"
   const customerPhone = order.mobile || order.phone || "—"
@@ -279,11 +281,11 @@ function AdminOrderDetailModal({ order, onClose, onDownload, onStatusChange, upd
               <div className="aodm-info-box">
                 <div className="aodm-info-label"><i className="fa-solid fa-circle-check me-1" />Status</div>
                 <div className="aodm-info-value">
-                  <StatusDropdown
-                    status={order.status}
-                    updating={updating}
-                    onChange={newStatus => onStatusChange(order, newStatus)}
-                  />
+                  <span>
+                    {order.status
+                      ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()
+                      : "—"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -336,16 +338,43 @@ function AdminOrderDetailModal({ order, onClose, onDownload, onStatusChange, upd
                     ${total}
                   </div>
                 </div>
-                <button onClick={() => onDownload(order)}
-                  style={{
-                    background: "rgba(255,255,255,.15)", border: "1.5px solid rgba(255,255,255,.3)",
-                    borderRadius: 10, color: "#fff", padding: "9px 18px",
-                    fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    display: "flex", alignItems: "center", gap: 7,
-                  }}>
-                  <i className="fa-solid fa-file-invoice" />
-                  Download Invoice
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {order.invoice_url && (
+                    <a
+                      href={order.invoice_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        background: "rgba(255,255,255,.15)", border: "1.5px solid rgba(255,255,255,.3)",
+                        borderRadius: 10, color: "#fff", padding: "9px 18px",
+                        fontSize: 13, fontWeight: 600, textDecoration: "none",
+                        display: "flex", alignItems: "center", gap: 7,
+                      }}>
+                      <i className="fa-solid fa-file-pdf" />
+                      View Invoice
+                    </a>
+                  )}
+                  <button onClick={() => onUploadInvoice(order)} disabled={uploadingInvoice}
+                    style={{
+                      background: "rgba(255,255,255,.15)", border: "1.5px solid rgba(255,255,255,.3)",
+                      borderRadius: 10, color: "#fff", padding: "9px 18px",
+                      fontSize: 13, fontWeight: 600, cursor: uploadingInvoice ? "wait" : "pointer",
+                      opacity: uploadingInvoice ? 0.7 : 1,
+                      display: "flex", alignItems: "center", gap: 7,
+                    }}>
+                    {uploadingInvoice ? (
+                      <span className="spinner-border spinner-border-sm" style={{ width: 13, height: 13, borderWidth: 1.5 }} />
+                    ) : (
+                      <i className={`fa-solid ${order.invoice_url ? "fa-rotate" : "fa-upload"}`} />
+                    )}
+                    {order.invoice_url ? "Update Invoice" : "Upload Invoice"}
+                  </button>
+
+                  {/*<button onClick={() => generateInvoicePdf(order)} className="btn btn-sm btn-outline-secondary">
+                    <i className="fa-solid fa-file-invoice me-1" />Generate Invoice
+                  </button>*/}
+
+                </div>
               </div>
             </div>
 

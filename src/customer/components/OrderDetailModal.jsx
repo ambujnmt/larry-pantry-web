@@ -138,7 +138,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function OrderDetailModal({ order, onClose, onDownload }) {
+function OrderDetailModal({ order, onClose }) {
   if (!order) return null
 
   const items = order.items || order.order_items || []
@@ -253,16 +253,25 @@ function OrderDetailModal({ order, onClose, onDownload }) {
                     ${total}
                   </div>
                 </div>
-                <button onClick={() => onDownload(order)}
-                  style={{
-                    background: "rgba(255,255,255,.15)", border: "1.5px solid rgba(255,255,255,.3)",
-                    borderRadius: 10, color: "#fff", padding: "9px 18px",
-                    fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    display: "flex", alignItems: "center", gap: 7,
-                  }}>
-                  <i className="fa-solid fa-file-invoice" />
-                  Download Invoice
-                </button>
+                {order.invoice_url ? (
+                  <a
+                    href={order.invoice_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      background: "rgba(255,255,255,.15)", border: "1.5px solid rgba(255,255,255,.3)",
+                      borderRadius: 10, color: "#fff", padding: "9px 18px",
+                      fontSize: 13, fontWeight: 600, textDecoration: "none",
+                      display: "flex", alignItems: "center", gap: 7,
+                    }}>
+                    <i className="fa-solid fa-file-pdf" />
+                    Download Invoice
+                  </a>
+                ) : (
+                  <div style={{ color: "rgba(255,255,255,.7)", fontSize: 12.5 }}>
+                    Invoice not available yet
+                  </div>
+                )}
               </div>
             </div>
 

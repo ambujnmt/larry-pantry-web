@@ -4,6 +4,7 @@ import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'
 import { getContactMessages, getContactMessage, deleteContactMessage, dtOptions } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
+import { formatDate, formatDateTime  } from '../../utils/helpers';
 
 DataTable.use(DT)
 
@@ -94,7 +95,7 @@ function Messages() {
                 ...dtOptions,
                 order: [[0, 'desc']],
                 columnDefs: [
-                  { orderable: false, targets: [5] }
+                  { orderable: false, targets: [6] }
                 ]
               }}
             >
@@ -104,6 +105,7 @@ function Messages() {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
+                  <th>Date</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -117,6 +119,7 @@ function Messages() {
                     <td className="align-middle fw-semibold" onClick={() => openView(msg)}>{msg.name}</td>
                     <td className="align-middle" onClick={() => openView(msg)}>{msg.email}</td>
                     <td className="align-middle" onClick={() => openView(msg)}>{msg.phone || '-'}</td>
+                    <td className="align-middle" onClick={() => openView(msg)}>{formatDate(msg.created_at)}</td>
                     <td className="align-middle" onClick={() => openView(msg)}>
                       <span className={`badge ${msg.status == 1 ? 'bg-secondary' : 'bg-success'}`}>
                         {msg.status == 1 ? 'Read' : 'Unread'}
@@ -185,7 +188,7 @@ function Messages() {
                       </div>
                       <div className="text-end">
                         <small className="text-muted">
-                          Received: {new Date(viewItem.created_at).toLocaleString()}
+                          Received: { formatDateTime(viewItem.created_at)}
                         </small>
                       </div>
                     </>
