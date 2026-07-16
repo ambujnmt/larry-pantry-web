@@ -50,7 +50,7 @@ function About() {
                         <div className="simple-about-us-content">
                             <div className="section-title-two">
                                 <h3 className="sub-title">About Us</h3>
-                                <h2 className="section-title">Welcome to Larry Pantry</h2>
+                                <h2 className="section-title">Welcome to Restaurant Pantry LA</h2>
                             </div>
                             <div className="single-about-inner-content">
                                 <p>

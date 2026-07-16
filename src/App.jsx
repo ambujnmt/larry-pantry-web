@@ -38,6 +38,7 @@ import LogoSetting    from "./admin/pages/LogoSetting"
 import Sliders from "./admin/pages/Sliders"
 import Messages from "./admin/pages/Messages"
 import Newsletter from "./admin/pages/Newsletter"
+import BottomBanners from "./admin/pages/BottomBanners"
 /*------------------------*/
 
 function App() {
@@ -90,6 +91,7 @@ function App() {
         <Route path="/admin/sliders" element={<DashboardLayout><Sliders /></DashboardLayout>} />
         <Route path="/admin/messages" element={<DashboardLayout><Messages /></DashboardLayout>}/>
         <Route path="/admin/newsletter" element={<DashboardLayout><Newsletter /></DashboardLayout>}/>
+        <Route path="/admin/settings/bottom-banners" element={<DashboardLayout><BottomBanners /></DashboardLayout>} />
 
 
       </Routes>

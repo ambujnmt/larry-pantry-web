@@ -44,3 +44,4 @@ export const searchProducts = (query) => post(`/products/search`, { q: query });
 export const submitContactForm = (data) => post("/contact/submit", data);
 // Newsletter subscribe
 export const subscribeNewsletter = (email) => post(`/newsletter/subscribe`, { email });
+export const getWebsiteBottomBanners = () => post("/bottom-banners")

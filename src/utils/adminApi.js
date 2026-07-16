@@ -179,3 +179,8 @@ export const deleteContactMessage = (id) => client(`/admin/messages/${id}`, { me
 
 export const getNewsletterSubscribers   = ()   => client("/admin/newsletter-subscribers", { auth: true })
 export const deleteNewsletterSubscriber = (id) => client(`/admin/newsletter-subscribers/${id}`, { method: "DELETE", auth: true })
+
+// ─── Bottom Banners ─────────────────────────────────────────────────────────
+
+export const getBottomBannerSettings = () => client("/admin/settings/bottom-banners", { auth: true })
+export const updateBottomBannerSettings = (formData) => formRequest("/admin/settings/bottom-banners", formData)
