@@ -8,53 +8,93 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Restaurant Pantry LA</title>
-
-    <!--  Google Fonts (HTML wali same) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&family=Engagement&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!--  Font Awesome Icons -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-    <!--  Vendor CSS (aapke public/assets/css/vendor folder se) -->
+    <!-- Vendor CSS (from public/assets/css/vendor folder) -->
     <link rel="stylesheet" href="/assets/css/vendor/bootstrap.min.css?v=2">
     <link rel="stylesheet" href="/assets/css/vendor/roadthemes-icon.css?v=2">
-
-    <!--  Plugin CSS -->
+    <!-- Plugin CSS -->
     <link rel="stylesheet" href="/assets/css/plugins/slick.css?v=2">
     <link rel="stylesheet" href="/assets/css/plugins/jquery-ui.min.css?v=2">
     <link rel="stylesheet" href="/assets/css/plugins/magnific-popup.css?v=2">
-
-    <!--  Main Style CSS (sabse important) -->
+    <!-- Main Style CSS (most important) -->
     <link rel="stylesheet" href="/assets/css/style.css?v=2">
-    <!-- Admin CSS - pehle se loaded, sirf disabled hai -->
+    <!-- Admin CSS - preloaded, currently disabled -->
     <link id="admin-portal-css" rel="stylesheet" href="/admin-assets/css/portal.css?v=2" disabled>
     <link id="admin-fa-css" rel="stylesheet" href="/admin-assets/plugins/fontawesome/css/all.min.css?v=2" disabled>
+
+    <!-- Preloader styles -->
+    <style>
+      #page-preloader {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.3s ease;
+      }
+      #page-preloader .preloader-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #eee;
+        border-top-color: #0e606c;
+        border-radius: 50%;
+        animation: preloader-spin 0.7s linear infinite;
+      }
+      @keyframes preloader-spin {
+        to { transform: rotate(360deg); }
+      }
+      #page-preloader.preloader-hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
   </head>
   <body>
+    <!-- Preloader (hides layout until everything is ready) -->
+    <div id="page-preloader">
+      <div class="preloader-spinner"></div>
+    </div>
+
     <div id="root"></div>
 
     <!-- Vendors JS -->
-    <script src="/assets/js/vendor/modernizr-3.11.7.min.js"></script>
-    <script src="/assets/js/vendor/jquery-3.6.0.min.js"></script>
-    <script src="/assets/js/vendor/jquery-migrate-3.3.2.min.js"></script>
+    <script src="/assets/js/vendor/modernizr-3.11.7.min.js" defer></script>
+    <script src="/assets/js/vendor/jquery-3.6.0.min.js" defer></script>
+    <script src="/assets/js/vendor/jquery-migrate-3.3.2.min.js" defer></script>
     <!-- Bootstrap JS -->
-    <script src="/assets/js/vendor/bootstrap.min.js"></script>
+    <script src="/assets/js/vendor/bootstrap.min.js" defer></script>
     <!-- Plugins JS -->
-    <script src="/assets/js/plugins/slick.min.js"></script>
-    <script src="/assets/js/plugins/countdown.min.js"></script>
-    <script src="/assets/js/plugins/jquery-ui.min.js"></script>
-    <script src="/assets/js/plugins/jquery.zoom.min.js"></script>
-    <script src="/assets/js/plugins/jquery.magnific-popup.min.js"></script>
-    <script src="/assets/js/plugins/counterup.min.js"></script>
-    <script src="/assets/js/plugins/scrollup.js"></script>
-    <script src="/assets/js/plugins/ajax.mail.js"></script>
-
+    <script src="/assets/js/plugins/slick.min.js" defer></script>
+    <script src="/assets/js/plugins/countdown.min.js" defer></script>
+    <script src="/assets/js/plugins/jquery-ui.min.js" defer></script>
+    <script src="/assets/js/plugins/jquery.zoom.min.js" defer></script>
+    <script src="/assets/js/plugins/jquery.magnific-popup.min.js" defer></script>
+    <script src="/assets/js/plugins/counterup.min.js" defer></script>
+    <script src="/assets/js/plugins/scrollup.js" defer></script>
+    <script src="/assets/js/plugins/ajax.mail.js" defer></script>
     <!-- Activation JS -->
-    <script src="/assets/js/active.js"></script>
-
+    <script src="/assets/js/active.js" defer></script>
     <!-- Vite React entry point -->
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Remove preloader once everything (CSS, JS, images) has fully loaded -->
+    <script>
+      window.addEventListener('load', function () {
+        var pre = document.getElementById('page-preloader');
+        if (pre) {
+          pre.classList.add('preloader-hidden');
+          setTimeout(function () {
+            pre.remove();
+          }, 300);
+        }
+      });
+    </script>
   </body>
 </html>

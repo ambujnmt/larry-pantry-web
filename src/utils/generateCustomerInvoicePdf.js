@@ -27,7 +27,7 @@ export default function generateCustomerInvoicePdf(order, customer) {
 
   doc.setFillColor(...PRIMARY); doc.rect(0, 0, W, 2, "F")
   doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.setTextColor(...PRIMARY)
-  doc.text("Larry Pantry", MARGIN, 20)
+  doc.text("Restaurant Pantry LA", MARGIN, 20)
   doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(...MUTED)
   doc.text("Fresh groceries delivered to your door", MARGIN, 26)
   doc.text("contact@larrypantry.com  |  +1 234 567 8900", MARGIN, 31)
@@ -115,7 +115,7 @@ export default function generateCustomerInvoicePdf(order, customer) {
 
   doc.setFillColor(...PRIMARY); doc.rect(0, 282, W, 15, "F")
   doc.setFontSize(8.5); doc.setFont("helvetica", "bold"); doc.setTextColor(...WHITE)
-  doc.text("Thank you for shopping with Larry Pantry!", W / 2, 288, { align: "center" })
+  doc.text("Thank you for shopping with Restaurant Pantry LA!", W / 2, 288, { align: "center" })
   doc.setFontSize(7.5); doc.setFont("helvetica", "normal"); doc.setTextColor(180, 220, 225)
   doc.text("www.larrypantry.com  |  contact@larrypantry.com", W / 2, 293, { align: "center" })
 
