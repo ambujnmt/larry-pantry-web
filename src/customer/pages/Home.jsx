@@ -269,7 +269,7 @@ function Home() {
             <div className="product-slider-active-4" key={activeCat}>
               {filteredBestSellers.map(p => (
                 <Link to={`/product/${p.slug || p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                  <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
                 </Link>
               ))}
             </div>
@@ -292,7 +292,7 @@ function Home() {
           <div className="product-slider-active product-border-box">
             {newArrivals.map((p) => (
               <Link key={p.id} to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
               </Link>
             ))}
           </div>

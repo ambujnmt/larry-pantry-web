@@ -175,7 +175,7 @@ function Products() {
       {error && !showModal && <div className="alert alert-danger d-flex gap-2 py-2"><i className="fa fa-exclamation-circle" /><small>{error}</small></div>}
 
       <div className="app-card shadow-sm">
-        <div className="app-card-body p-3">
+        <div className="app-card-body p-3 table-responsive">
           {loading ? (
             <div className="text-center py-4"><span className="spinner-border spinner-border-sm me-2" />Loading...</div>
           ) : (

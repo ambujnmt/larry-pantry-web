@@ -226,7 +226,7 @@ function Categories() {
                   {products.map(p => (
                     <div key={p.id} className="col">
                       <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                        <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                        <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
                       </Link>
                     </div>
                   ))}

@@ -101,7 +101,7 @@ function Units() {
       )}
 
       <div className="app-card shadow-sm">
-        <div className="app-card-body p-3">
+        <div className="app-card-body p-3 table-responsive">
           {loading ? (
             <div className="text-center py-4">
               <span className="spinner-border spinner-border-sm me-2" />Loading...

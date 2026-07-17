@@ -1,8 +1,9 @@
 // src/customer/pages/ProductDetails.jsx
 import { useState, useEffect, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
-import { getProductDetails, getProductsByCategory } from "../../utils/websiteApi"
+import { getProductDetails, getProductsByCategory, getProductReviews } from "../../utils/websiteApi"
 import ProductCard from "../components/ProductCard"
+import StarRating from "../components/StarRating"
 
 function ProductDetails() {
   const { slug } = useParams()
@@ -14,6 +15,10 @@ function ProductDetails() {
   const [related, setRelated]         = useState([])
   const [relatedLoading, setRelatedLoading] = useState(false)
   const scrollerRef = useRef(null)
+
+  const [reviewData, setReviewData] = useState({ average_rating: 0, review_count: 0, reviews: [], has_more: false })
+  const [reviewPage, setReviewPage] = useState(1)
+  const [loadingMoreReviews, setLoadingMoreReviews] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -30,6 +35,31 @@ function ProductDetails() {
     }
     load()
   }, [slug])
+
+  // Rating summary + reviews for this product
+  // Rating summary + first page of reviews for this product
+  useEffect(() => {
+    if (!product?.id) return
+    setReviewPage(1)
+    getProductReviews(product.id, 1)
+      .then(res => setReviewData(res.data || { average_rating: 0, review_count: 0, reviews: [], has_more: false }))
+      .catch(() => {})
+  }, [product?.id])
+
+  const loadMoreReviews = () => {
+    const nextPage = reviewPage + 1
+    setLoadingMoreReviews(true)
+    getProductReviews(product.id, nextPage)
+      .then(res => {
+        setReviewData(prev => ({
+          ...res.data,
+          reviews: [...prev.reviews, ...(res.data?.reviews || [])],
+        }))
+        setReviewPage(nextPage)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMoreReviews(false))
+  }
 
   // Related products: same category, current product excluded
   useEffect(() => {
@@ -123,6 +153,15 @@ function ProductDetails() {
         <div className="col-md-7">
           <h2 className="fw-bold mb-2">{product.name}</h2>
 
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <StarRating value={reviewData.average_rating} size={16} />
+            <span style={{ fontSize: 13, color: "#64748b" }}>
+              {reviewData.review_count > 0
+                ? `${reviewData.average_rating} (${reviewData.review_count} review${reviewData.review_count !== 1 ? "s" : ""})`
+                : "No reviews yet"}
+            </span>
+          </div>
+
           <div className="text-muted mb-3">
             {product.category_name && <span>Category: {product.category_name}</span>}
             {product.brand_name && <span className="ms-3">Brand: {product.brand_name}</span>}
@@ -160,6 +199,39 @@ function ProductDetails() {
           </Link>
         </div>
       </div>
+
+      {/* Reviews */}
+      <section className="mt-5 pt-4 border-top">
+        <h4 className="fw-bold mb-3">Customer Reviews</h4>
+        {reviewData.reviews.length === 0 ? (
+          <p className="text-muted">No reviews yet for this product.</p>
+        ) : (
+          <div className="d-flex flex-column gap-3">
+            {reviewData.reviews.map(r => (
+              <div key={r.id} className="border rounded-3 p-3">
+                <div className="d-flex align-items-center justify-content-between mb-1">
+                  <span className="fw-semibold">{r.customer_name || "Customer"}</span>
+                  <StarRating value={r.rating} size={13} />
+                </div>
+                {r.review_text && <div style={{ fontSize: 14, color: "#374151" }}>{r.review_text}</div>}
+                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>
+                  {new Date(r.created_at).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}
+                </div>
+              </div>
+            ))}
+            {reviewData.has_more && (
+              <button
+                type="button"
+                className="btn btn-outline-secondary align-self-start"
+                onClick={loadMoreReviews}
+                disabled={loadingMoreReviews}
+              >
+                {loadingMoreReviews ? "Loading..." : "Show more reviews"}
+              </button>
+            )}
+          </div>
+        )}
+      </section>
 
       {/* Related Products */}
       {!relatedLoading && related.length > 0 && (
@@ -225,7 +297,7 @@ function ProductDetails() {
                       e.currentTarget.style.transform = "translateY(0)"
                     }}
                   >
-                    <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                    <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
                   </div>
                 </Link>
               </div>

@@ -45,3 +45,6 @@ export const submitContactForm = (data) => post("/contact/submit", data);
 // Newsletter subscribe
 export const subscribeNewsletter = (email) => post(`/newsletter/subscribe`, { email });
 export const getWebsiteBottomBanners = () => post("/bottom-banners")
+
+// Reviews — rating summary + paginated review list for a product (public, no login needed)
+export const getProductReviews = (productId, page = 1) => post(`/products/${productId}/reviews`, { page })
