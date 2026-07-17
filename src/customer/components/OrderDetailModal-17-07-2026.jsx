@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react"
-import { submitProductReview, getMyProductReview } from "../../utils/customerApi"
-import StarRating from "./StarRating"
-
 const STATUS_BADGE = {
   pending:    { bg: "#fef3c7", color: "#92400e", label: "Pending" },
   confirmed:  { bg: "#dbeafe", color: "#1e40af", label: "Confirmed" },
@@ -143,40 +139,7 @@ function StatusBadge({ status }) {
 }
 
 function OrderDetailModal({ order, onClose }) {
-  const [reviews, setReviews] = useState({}) // product_id -> { rating, saving }
-
-  // Delivered orders only — fetch the customer's existing rating (if any) for each product
-  useEffect(() => {
-    if (!order || order.status?.toLowerCase() !== "delivered") return
-    const items = order.items || order.order_items || []
-    const productIds = [...new Set(items.map(i => i.product_id))]
-
-    productIds.forEach(productId => {
-      getMyProductReview(productId)
-        .then(res => {
-          if (res.data) {
-            setReviews(prev => ({ ...prev, [productId]: { rating: res.data.rating, saving: false } }))
-          }
-        })
-        .catch(() => {})
-    })
-  }, [order?.id, order?.status])
-
   if (!order) return null
-
-  const isDelivered = order.status?.toLowerCase() === "delivered"
-
-  const handleRate = (productId, rating) => {
-    setReviews(prev => ({ ...prev, [productId]: { ...prev[productId], rating, saving: true } }))
-    submitProductReview(productId, rating, "")
-      .then(() => {
-        setReviews(prev => ({ ...prev, [productId]: { rating, saving: false } }))
-      })
-      .catch(err => {
-        alert(err.message || "Could not save your rating. Please try again.")
-        setReviews(prev => ({ ...prev, [productId]: { ...prev[productId], saving: false } }))
-      })
-  }
 
   const items = order.items || order.order_items || []
   const date = order.created_at
@@ -253,12 +216,7 @@ function OrderDetailModal({ order, onClose }) {
                 <div style={{ padding: "16px 0", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
                   No items found
                 </div>
-              ) : (() => {
-                const seenProductIds = new Set()
-                return items.map((item, idx) => {
-                  const showRating = isDelivered && !seenProductIds.has(item.product_id)
-                  seenProductIds.add(item.product_id)
-                  return (
+              ) : items.map((item, idx) => (
                 <div key={idx} className="odm-item-row">
                   <img
                     src={item.product_image || "/admin-assets/images/placeholder.png"}
@@ -273,20 +231,6 @@ function OrderDetailModal({ order, onClose }) {
                     <div style={{ fontSize: 12, color: "#64748b" }}>
                       Variant: <span style={{ fontWeight: 600, color: "#374151" }}>{item.variant_label || "—"}</span>
                     </div>
-                    {showRating && (
-                      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 11, color: "#94a3b8" }}>Your rating:</span>
-                        <StarRating
-                          value={reviews[item.product_id]?.rating || 0}
-                          onChange={r => handleRate(item.product_id, r)}
-                          interactive
-                          size={14}
-                        />
-                        {reviews[item.product_id]?.saving && (
-                          <span className="spinner-border spinner-border-sm" style={{ width: 10, height: 10, borderWidth: 1.5 }} />
-                        )}
-                      </div>
-                    )}
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <div style={{ fontSize: 12, color: "#64748b" }}>
@@ -297,9 +241,7 @@ function OrderDetailModal({ order, onClose }) {
                     </div>
                   </div>
                 </div>
-                  )
-                })
-              })()}
+              ))}
             </div>
 
             {/* Total */}

@@ -143,3 +143,16 @@ export const getMyOrders = () =>
 
 export const placeOrder = (data) =>
   client("/place-order", { method: "POST", auth: true, body: data })
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+// Create or update (if already reviewed this product) the customer's review
+export const submitProductReview = (productId, rating, review_text) =>
+  client(`/products/${productId}/review`, { method: "POST", auth: true, body: { rating, review_text } })
+
+// Fetch the logged-in customer's own review for a product (to prefill the form)
+export const getMyProductReview = (productId) =>
+  client(`/products/${productId}/my-review`, { auth: true })
+
+export const deleteProductReview = (productId) =>
+  client(`/products/${productId}/review`, { method: "DELETE", auth: true })

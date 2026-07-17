@@ -73,7 +73,7 @@ function SearchResults() {
               {products.map(p => (
                 <div key={p.id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6">
                   <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                    <ProductCard name={p.name} price={getPrice(p)} image={getImage(p)} />
+                    <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
                   </Link>
                 </div>
               ))}
