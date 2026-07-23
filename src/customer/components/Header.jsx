@@ -38,10 +38,10 @@ function Header() {
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/about", label: "About Us" },
-    { to: "#", label: "Food Menu" },
+    // { to: "#", label: "Food Menu" },
     { to: "/categories", label: "Categories" },
     { to: "#", label: "Special Offers / Deals" },
-    { to: "/qa", label: "Q & A" },
+    { to: "/qa", label: "FAQ" },
     { to: "/contact", label: "Contact Us" },
   ]
 
@@ -128,10 +128,10 @@ function Header() {
                     <ul>
                       <li className="active"><Link to="/">Home</Link></li>
                       <li><Link to="/about">About Us</Link></li>
-                      <li><Link to="#">Food Menu</Link></li>
+                      {/*<li><Link to="#">Food Menu</Link></li>*/}
                       <li><Link to="/categories">Categories</Link></li>
                       <li><Link to="#">Special Offers / Deals</Link></li>
-                      <li><Link to="/qa">Q & A</Link></li>
+                      <li><Link to="/qa">FAQ</Link></li>
                       <li><Link to="/contact">Contact Us</Link></li>
                     </ul>
                   </nav>

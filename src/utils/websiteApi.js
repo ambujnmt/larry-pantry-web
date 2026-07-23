@@ -48,3 +48,11 @@ export const getWebsiteBottomBanners = () => post("/bottom-banners")
 
 // Reviews — rating summary + paginated review list for a product (public, no login needed)
 export const getProductReviews = (productId, page = 1) => post(`/products/${productId}/reviews`, { page })
+
+// Static pages — About Us, Terms & Conditions, etc. (public, no login needed)
+export const getWebsitePage = (slug) => post(`/pages/${slug}`)
+
+// FAQs — active ones only, ordered for display (public, no login needed)
+export const getWebsiteFaqs = () => post("/faqs")
+
+export const getWebsiteTestimonials = () => post("/testimonials")

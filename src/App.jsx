@@ -9,6 +9,8 @@ import Qa from "./customer/pages/Qa";
 import Categories from "./customer/pages/Categories";
 import ProductDetails from "./customer/pages/ProductDetails"
 import SearchResults from "./customer/pages/SearchResults";
+import TermsConditions from "./customer/pages/TermsConditions";
+import PrivacyPolicy from "./customer/pages/PrivacyPolicy";
 /*----- Customer Portal ------*/
 import CustomerLogin            from "./customer/pages/CustomerLogin";
 import CustomerDashboardLayout  from "./customer/layouts/CustomerDashboardLayout";
@@ -39,6 +41,9 @@ import Sliders from "./admin/pages/Sliders"
 import Messages from "./admin/pages/Messages"
 import Newsletter from "./admin/pages/Newsletter"
 import BottomBanners from "./admin/pages/BottomBanners"
+import PageEditor from "./admin/pages/PageEditor"
+import Faqs from "./admin/pages/Faqs"
+import Testimonials from "./admin/pages/Testimonials"
 /*------------------------*/
 
 function App() {
@@ -50,6 +55,8 @@ function App() {
         <Route path="/" element={<><Header /><Home /><Footer /></>} />
         <Route path="/contact" element={<><Header /><Contact /><Footer /></>} />
         <Route path="/about" element={<><Header /><About /><Footer /></>} />
+        <Route path="/terms-conditions" element={<><Header /><TermsConditions /><Footer /></>} />
+        <Route path="/privacy-policy" element={<><Header /><PrivacyPolicy /><Footer /></>} />
         <Route path="/qa" element={<><Header /><Qa /><Footer /></>} />
         <Route path="/categories" element={<><Header /><Categories /><Footer /></>} />
         <Route path="/categories/:categorySlug" element={<><Header /><Categories /><Footer /></>} />
@@ -92,6 +99,9 @@ function App() {
         <Route path="/admin/messages" element={<DashboardLayout><Messages /></DashboardLayout>}/>
         <Route path="/admin/newsletter" element={<DashboardLayout><Newsletter /></DashboardLayout>}/>
         <Route path="/admin/settings/bottom-banners" element={<DashboardLayout><BottomBanners /></DashboardLayout>} />
+        <Route path="/admin/pages/:slug" element={<DashboardLayout><PageEditor /></DashboardLayout>} />
+        <Route path="/admin/faqs" element={<DashboardLayout><Faqs /></DashboardLayout>} />
+        <Route path="/admin/testimonials" element={<DashboardLayout><Testimonials /></DashboardLayout>} />
 
 
       </Routes>

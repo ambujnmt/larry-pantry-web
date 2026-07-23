@@ -141,11 +141,11 @@ function Units() {
                         {u.status == 1 ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="align-middle">
-                      <button className="btn btn-sm btn-outline-primary me-2" onClick={() => openEdit(u)}>
+                    <td className="align-middle text-nowrap">
+                      <button className="btn btn-sm btn-outline-primary m-1" onClick={() => openEdit(u)}>
                         <i className="fa fa-edit" />
                       </button>
-                      <button className="btn btn-sm btn-outline-danger"
+                      <button className="btn btn-sm btn-outline-danger m-1"
                         onClick={() => handleDelete(u.id)} disabled={deleting === u.id}>
                         {deleting === u.id
                           ? <span className="spinner-border spinner-border-sm" />

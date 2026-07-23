@@ -338,9 +338,9 @@ function Users() {
                         <span className={`badge bg-${color}`}>{label}</span>
                       </td>
                       <td className="align-middle">
-                        <button className="btn btn-sm btn-outline-info me-1" title="View Details" onClick={() => setViewUser(u)}><i className="fa fa-eye" /></button>
-                        <button className="btn btn-sm btn-outline-success me-1" title="Assign Products" onClick={() => setAssignUser(u)}><i className="fa fa-box" /></button>
-                        <button className="btn btn-sm btn-outline-danger" title="Delete" onClick={() => handleDelete(u.id)} disabled={deleting === u.id}>
+                        <button className="btn btn-sm btn-outline-info m-1" title="View Details" onClick={() => setViewUser(u)}><i className="fa fa-eye" /></button>
+                        <button className="btn btn-sm btn-outline-success m-1" title="Assign Products" onClick={() => setAssignUser(u)}><i className="fa fa-box" /></button>
+                        <button className="btn btn-sm btn-outline-danger m-1" title="Delete" onClick={() => handleDelete(u.id)} disabled={deleting === u.id}>
                           {deleting === u.id ? <span className="spinner-border spinner-border-sm" /> : <i className="fa fa-trash" />}
                         </button>
                       </td>

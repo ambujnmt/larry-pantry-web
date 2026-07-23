@@ -144,7 +144,7 @@ function Sliders() {
                       <div >
                       <img src={s.image_url || "/admin-assets/images/placeholder.png"} alt={s.title}
                         onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
-                        className="img-fluid" />
+                        className="img-fluid" style={{ minWidth: "200px" }} />
                       </div>
                     </td>
                     <td className="align-middle">{s.title || '—'}</td>
@@ -154,9 +154,9 @@ function Sliders() {
                         {s.status == 1 ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="align-middle">
-                      <button className="btn btn-sm btn-outline-primary me-1" onClick={() => openEdit(s)}><i className="fa fa-edit" /></button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(s.id)} disabled={deleting === s.id}>
+                    <td className="align-middle text-nowrap">
+                      <button className="btn btn-sm btn-outline-primary m-1" onClick={() => openEdit(s)}><i className="fa fa-edit" /></button>
+                      <button className="btn btn-sm btn-outline-danger m-1" onClick={() => handleDelete(s.id)} disabled={deleting === s.id}>
                         {deleting === s.id ? <span className="spinner-border spinner-border-sm" /> : <i className="fa fa-trash" />}
                       </button>
                     </td>

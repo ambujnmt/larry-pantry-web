@@ -16,8 +16,7 @@ const defaultForm = {
   is_featured: 0, status: 1
 }
 
-// regular_price is now optional; my_price is an internal-only field (never shown to customers)
-const defaultVariant = { unit_id: "", quantity: "", regular_price: "", my_price: "", selling_price: "", is_default: 0 }
+const defaultVariant = { unit_id: "", quantity: "", regular_price: "", selling_price: "", is_default: 0 }
 
 /*--------- Ratings ----------------*/
 function ProductRatingCell({ productId }) {
@@ -52,12 +51,6 @@ function Products() {
   const [newImages, setNewImages]     = useState([])
   const [newPreviews, setNewPreviews] = useState([])
   const fileRef = useRef()
-
-  // Stickers (e.g. Gluten Free, Kosher, etc.) - multiple images, stored directly on the product
-  const [existingStickers, setExistingStickers] = useState([]) // [{ filename, url }] already saved on the product
-  const [newStickers, setNewStickers]           = useState([]) // newly selected File objects, not yet uploaded
-  const stickerFileRef = useRef()
-
   const joditConfig = useMemo(() => ({ height: 300, zIndex: 10100 }), [])
   const [activeImage, setActiveImage] = useState(null)
 
@@ -88,7 +81,6 @@ function Products() {
     setEditItem(null); setForm(defaultForm)
     setVariants([{ ...defaultVariant }])
     setNewImages([]); setNewPreviews([]); setError("")
-    setExistingStickers([]); setNewStickers([])
     setShowModal(true)
   }
 
@@ -105,14 +97,12 @@ function Products() {
     setVariants(p.variants?.length > 0
       ? p.variants.map(v => ({
           id: v.id, unit_id: v.unit_id, quantity: v.quantity,
-          regular_price: v.regular_price ?? "", my_price: v.my_price ?? "",
-          selling_price: v.selling_price,
+          regular_price: v.regular_price, selling_price: v.selling_price,
           is_default: v.is_default
         }))
       : [{ ...defaultVariant }]
     )
     setNewImages([]); setNewPreviews([]); setError("")
-    setExistingStickers(p.stickers || []); setNewStickers([])
     setShowModal(true)
   }
 
@@ -132,28 +122,12 @@ function Products() {
     } catch (err) { setError(err.message) }
   }
 
-  // Stickers can be added multiple times before saving - new selections are appended
-  const handleStickersChange = (e) => {
-    const files = Array.from(e.target.files)
-    setNewStickers(prev => [...prev, ...files])
-    e.target.value = ""
-  }
-
-  const removeExistingSticker = (filename) => {
-    setExistingStickers(prev => prev.filter(s => s.filename !== filename))
-  }
-
-  const removeNewSticker = (index) => {
-    setNewStickers(prev => prev.filter((_, i) => i !== index))
-  }
-
   const handleSave = async (e) => {
     e.preventDefault()
     if (!form.name.trim())    { setError("Product name is required."); return }
     if (!form.category_id)    { setError("Category is required."); return }
-    // regular_price and my_price are optional - only quantity, unit and selling price are required
-    if (variants.some(v => !v.quantity || !v.unit_id || !v.selling_price)) {
-      setError("All variants must have quantity, unit and selling price."); return
+    if (variants.some(v => !v.quantity || !v.unit_id || !v.regular_price || !v.selling_price)) {
+      setError("All variants must have quantity, unit, regular price and selling price."); return
     }
     setSaving(true); setError("")
     try {
@@ -161,10 +135,6 @@ function Products() {
       Object.entries(form).forEach(([k, v]) => fd.append(k, v ?? ""))
       newImages.forEach(f => fd.append("images[]", f))
       fd.append("variants", JSON.stringify(variants))
-
-      // Stickers: tell the backend which existing ones to keep, plus any new files to upload
-      fd.append("existing_stickers", JSON.stringify(existingStickers.map(s => s.filename)))
-      newStickers.forEach(f => fd.append("stickers[]", f))
 
       let data
       if (editItem) {
@@ -293,7 +263,7 @@ function Products() {
                     <div className="row">
 
                       {/* Images */}
-                      <div className="col-md-6 mb-3">
+                      <div className="col-12 mb-3">
                         <label className="form-label small text-secondary">Product Images</label>
                         {editItem?.images?.length > 0 && (
                           <div className="d-flex gap-2 flex-wrap mb-2">
@@ -326,47 +296,6 @@ function Products() {
                         </button>
                         <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleImagesChange} />
                         <small className="text-muted ms-2">First image will be primary</small>
-                      </div>
-
-                      {/* Stickers (Gluten Free, Kosher, etc.) */}
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label small text-secondary">Symbol <small className="text-muted">(e.g. Gluten Free, Kosher)  </small></label>
-
-                        {(existingStickers.length > 0 || newStickers.length > 0) && (
-                          <div className="d-flex gap-2 flex-wrap mb-2">
-                            {existingStickers.map(s => (
-                              <div key={s.filename} style={{ position: 'relative' }}>
-                                <img src={s.url || "/admin-assets/images/placeholder.png"}
-                                  onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
-                                  style={{ width: 60, height: 60, objectFit: 'contain', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff' }} />
-                                <button type="button" onClick={() => removeExistingSticker(s.filename)}
-                                  style={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, borderRadius: '50%',
-                                    background: '#dc3545', border: 'none', color: '#fff', fontSize: 10, cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <i className="fa fa-times" />
-                                </button>
-                              </div>
-                            ))}
-                            {newStickers.map((file, i) => (
-                              <div key={i} style={{ position: 'relative' }}>
-                                <img src={URL.createObjectURL(file)}
-                                  style={{ width: 60, height: 60, objectFit: 'contain', borderRadius: 8, border: '1px dashed #0e606c', background: '#fff' }} />
-                                <button type="button" onClick={() => removeNewSticker(i)}
-                                  style={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, borderRadius: '50%',
-                                    background: '#dc3545', border: 'none', color: '#fff', fontSize: 10, cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <i className="fa fa-times" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => stickerFileRef.current.click()}>
-                          <i className="fa fa-upload me-2" />Upload Symbol
-                        </button>
-                        <input ref={stickerFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleStickersChange} />
-                        {/*<small className="text-muted ms-2">You can upload multiple sticker images</small>*/}
                       </div>
 
                       {/* Name */}
@@ -427,16 +356,15 @@ function Products() {
                         </div>
                         <div className="border rounded p-3" style={{ background: '#f8fafc' }}>
                           <div className="row g-2 mb-1">
-                            <div className="col-md-1"><small className="text-secondary">Qty <span className="text-danger">*</span></small></div>
+                            <div className="col-md-2"><small className="text-secondary">Qty <span className="text-danger">*</span></small></div>
                             <div className="col-md-2"><small className="text-secondary">Unit <span className="text-danger">*</span></small></div>
-                            <div className="col-md-2"><small className="text-secondary">Regular Price ($) <small className="text-muted">(optional)</small></small></div>
-                            <div className="col-md-2"><small className="text-secondary">Selling Price ($) <span className="text-danger">*</span></small></div>
-                            <div className="col-md-2"><small className="text-secondary">My Price ($) <small className="text-muted">(internal only)</small></small></div>
-                            <div className="col-md-3"><small className="text-secondary">Default</small></div>
+                            <div className="col-md-3"><small className="text-secondary">Regular Price ($) <span className="text-danger">*</span></small></div>
+                            <div className="col-md-3"><small className="text-secondary">Selling Price ($) <span className="text-danger">*</span></small></div>
+                            <div className="col-md-2"><small className="text-secondary">Default</small></div>
                           </div>
                           {variants.map((v, i) => (
                             <div key={i} className="row g-2 align-items-center mb-2">
-                              <div className="col-md-1">
+                              <div className="col-md-2">
                                 <input type="number" step="0.01" min="0" className="form-control form-control-sm"
                                   placeholder="e.g. 5" value={v.quantity}
                                   onChange={e => updateVariant(i, 'quantity', e.target.value)} required />
@@ -448,22 +376,17 @@ function Products() {
                                   {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                                 </select>
                               </div>
-                              <div className="col-md-2">
+                              <div className="col-md-3">
                                 <input type="number" step="0.01" min="0" className="form-control form-control-sm"
-                                  placeholder="Optional" value={v.regular_price}
-                                  onChange={e => updateVariant(i, 'regular_price', e.target.value)} />
+                                  placeholder="Required" value={v.regular_price}
+                                  onChange={e => updateVariant(i, 'regular_price', e.target.value)} required />
                               </div>
-                              <div className="col-md-2">
+                              <div className="col-md-3">
                                 <input type="number" step="0.01" min="0" className="form-control form-control-sm"
                                   placeholder="Required" value={v.selling_price}
                                   onChange={e => updateVariant(i, 'selling_price', e.target.value)} required />
                               </div>
-                              <div className="col-md-2">
-                                <input type="number" step="0.01" min="0" className="form-control form-control-sm"
-                                  placeholder="Internal only" value={v.my_price}
-                                  onChange={e => updateVariant(i, 'my_price', e.target.value)} />
-                              </div>
-                              <div className="col-md-3 d-flex align-items-center gap-2">
+                              <div className="col-md-2 d-flex align-items-center gap-2">
                                 <div className="form-check mb-0">
                                   <input className="form-check-input" type="radio" name="default_variant"
                                     checked={v.is_default == 1} onChange={() => setDefaultVariant(i)} />
@@ -478,7 +401,7 @@ function Products() {
                             </div>
                           ))}
                         </div>
-                        <small className="text-muted">Example: 5 + kg = "5 kg" | 200 + ml = "200 ml". My Price is for internal cost tracking only and is never shown to customers.</small>
+                        <small className="text-muted">Example: 5 + kg = "5 kg" | 200 + ml = "200 ml"</small>
                       </div>
 
                       {/* Description */}
@@ -555,17 +478,6 @@ function Products() {
                           ))}
                         </div>
                       )}
-                      {viewItem.stickers?.length > 0 && (
-                        <div className="mt-3">
-                          <small className="text-muted d-block mb-1">Symbol</small>
-                          <div className="d-flex gap-2 flex-wrap">
-                            {viewItem.stickers.map((s, i) => (
-                              <img key={i} src={s.url || s} alt="sticker"
-                                style={{ width: 40, height: 40, objectFit: 'contain', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff' }} />
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
                     <div className="col-md-8">
                       <div className="d-flex justify-content-between align-items-start mb-3">
@@ -600,20 +512,13 @@ function Products() {
                           <h6 className="fw-semibold mb-2">Variants</h6>
                           <table className="table table-sm table-bordered mb-0">
                             <thead className="table-light">
-                              <tr>
-                                <th>Qty & Unit</th>
-                                <th>Regular Price</th>
-                                <th>My Price <small className="text-muted">(internal)</small></th>
-                                <th>Selling Price</th>
-                                <th>Default</th>
-                              </tr>
+                              <tr><th>Qty & Unit</th><th>Regular Price</th><th>Selling Price</th><th>Default</th></tr>
                             </thead>
                             <tbody>
                               {viewItem.variants.map((v, i) => (
                                 <tr key={i}>
                                   <td className="fw-semibold">{variantLabel(v)}</td>
                                   <td>{v.regular_price > 0 ? <s className="text-muted">${v.regular_price}</s> : '—'}</td>
-                                  <td className="text-muted">{v.my_price > 0 ? `$${v.my_price}` : '—'}</td>
                                   <td className="text-success fw-semibold">${v.selling_price}</td>
                                   <td>{v.is_default == 1 ? <span className="badge bg-primary">Default</span> : '—'}</td>
                                 </tr>
@@ -640,7 +545,7 @@ function Products() {
                       Updated Date: <b>{viewItem.updated_at ? new Date(viewItem.updated_at).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }) : '—'}</b></small>
                   </div>
                 </div>
-
+                
                 <div className="modal-footer">
                   <button className="btn btn-outline-secondary" onClick={() => setViewItem(null)}>Close</button>
                   <button className="btn text-white" style={{ background: '#0e606c' }}

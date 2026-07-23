@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
 import Swal from "sweetalert2"
-import { getAssignedProducts, placeOrder, STORAGE_URL } from "../../utils/customerApi"
+import { getAssignedProducts, placeOrder, STORAGE_URL, getProductReviews } from "../../utils/customerApi"
 import CustomerPageHeader from "../components/CustomerPageHeader"
 import ProductDetailModal from "../components/ProductDetailModal"
+import StarRating from "../components/StarRating"
 
 const productImg = (p) => {
   const url = p.primary_image?.image_url || p.image_url || ""
@@ -49,6 +50,18 @@ function ProductCard({ product, qtys, onQtyChange, onViewDetails }) {
   const hasAnyQty = variants.some(v => (qtys[v.id] || 0) > 0)
   const cardTotal = variants.reduce((s, v) => s + (qtys[v.id] || 0) * parseFloat(v.selling_price || 0), 0)
 
+  const [rating, setRating] = useState({ average: 0, count: 0 })
+
+  useEffect(() => {
+    if (!product?.id) return
+    getProductReviews(product.id)
+      .then(res => {
+        const data = res?.data ?? res
+        setRating({ average: data?.average_rating || 0, count: data?.review_count || 0 })
+      })
+      .catch(() => {})
+  }, [product?.id])
+
   return (
     <div className="app-card shadow-sm" style={{
       borderRadius: 14,
@@ -74,6 +87,12 @@ function ProductCard({ product, qtys, onQtyChange, onViewDetails }) {
             {product.category_name && (
               <div style={{ fontSize: 12, color: '#888' }}>{product.category_name}</div>
             )}
+            <div className="d-flex align-items-center gap-1 mt-1">
+              <StarRating value={rating.average} size={12} />
+              {rating.count > 0 && (
+                <span style={{ fontSize: 11, color: '#94a3b8' }}>({rating.count})</span>
+              )}
+            </div>
           </div>
           {hasAnyQty && (
             <div className="text-end flex-shrink-0">
@@ -395,7 +414,7 @@ function CustomerAssignedProducts() {
                 <div style={{
                   width: 4, height: 20, borderRadius: 4, background: '#0e606c', flexShrink: 0,
                 }} />
-                <h6 className="mb-0 fw-bold" style={{ fontSize: 15, color: '#1e293b' }}>
+                <h6 className="mb-0 fw-bold text-danger">
                   {catName}
                 </h6>
                 <span style={{ fontSize: 12, color: '#94a3b8' }}>

@@ -1,5 +1,6 @@
-import { STORAGE_URL } from "../../utils/customerApi"
-import { useState } from "react"
+import { STORAGE_URL, getProductReviews } from "../../utils/customerApi"
+import { useState, useEffect } from "react"
+import StarRating from "./StarRating"
 
 const css = `
   .pdm-backdrop {
@@ -108,6 +109,15 @@ const productImg = (p, url) => {
 
 function ProductDetailModal({ product, onClose }) {
   const [activeImg, setActiveImg] = useState(null)
+  const [rating, setRating] = useState({ average: 0, count: 0 })
+
+  useEffect(() => {
+    if (!product?.id) return
+    getProductReviews(product.id).then(res => {
+      const data = res?.data ?? res
+      setRating({ average: data?.average_rating || 0, count: data?.review_count || 0 })
+    }).catch(() => {})
+  }, [product?.id])
 
   if (!product) return null
 
@@ -180,6 +190,11 @@ function ProductDetailModal({ product, onClose }) {
                     {Number(product.status) === 1 ? "Active" : "Inactive"}
                   </span>
                 )}
+              </div>
+
+              <div className="d-flex align-items-center gap-2 mb-2">
+                <StarRating value={rating.average} size={14} />
+                <span style={{ fontSize: 12.5, color: "#64748b" }}>{rating.count > 0 ? `${rating.average} (${rating.count} review${rating.count !== 1 ? "s" : ""})` : "No reviews yet"}</span>
               </div>
 
               {(product.sku || product.brand_name) && (

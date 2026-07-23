@@ -40,8 +40,8 @@ function Newsletter() {
           <div className="col-lg-4 col-md-6 order-md-1 order-lg-1">
             <div className="newsletter-title-wrap">
               <div className="newsletter-content">
-                <h2>Get Fresh Deals in Your Inbox</h2>
-                <p>Subscribe for weekly discounts, new arrivals, and exclusive offers — straight to your email.</p>
+                <h2>Stay updated</h2>
+                <p><small>Subscribe for weekly discounts and exclusive offers — straight to your email.</small></p>
               </div>
             </div>
           </div>
@@ -49,9 +49,8 @@ function Newsletter() {
             <div className="newsletter-whatsapp-wrap">
               <div className="newsletter-whatsapp-inner">
                 <div className="whatsapp-content">
-                  <p>Call Us 24/7</p>
                   {contact.phone ? (
-                    <h2><a href={`tel:${contact.phone}`} className="text-white text-decoration-none">{contact.phone}</a></h2>
+                    <h2>Call Us : <a href={`tel:${contact.phone}`} className="text-white text-decoration-none">{contact.phone}</a></h2>
                   ) : (
                     <h2>—</h2>
                   )}

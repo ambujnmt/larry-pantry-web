@@ -123,37 +123,13 @@ function ProductDetails() {
 
         {/* Left: Images */}
         <div className="col-md-5">
-          <div style={{ position: "relative" }}>
-            <img
-              src={mainImg}
-              className="img-fluid rounded border w-100 mb-3"
-              style={{ maxHeight: 400, objectFit: "cover" }}
-              alt={product.name}
-              onError={e => { e.target.onerror = null; e.target.src = "/assets/img/no-image.jpg" }}
-            />
-
-            {/* Stickers overlay on the main image (Gluten Free, Kosher, etc.) */}
-            {product.stickers?.length > 0 && (
-              <div style={{
-                position: "absolute", top: 10, left: 10,
-                display: "flex", flexDirection: "column", gap: 6,
-              }}>
-                {product.stickers.map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt="sticker"
-                    style={{
-                      width: 40, height: 40, objectFit: "contain",
-                      background: "#fff", borderRadius: 8,
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.18)", padding: 3,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
+          <img
+            src={mainImg}
+            className="img-fluid rounded border w-100 mb-3"
+            style={{ maxHeight: 400, objectFit: "cover" }}
+            alt={product.name}
+            onError={e => { e.target.onerror = null; e.target.src = "/assets/img/no-image.jpg" }}
+          />
           {images.length > 1 && (
             <div className="d-flex gap-2 flex-wrap">
               {images.map((img, i) => (
@@ -321,7 +297,7 @@ function ProductDetails() {
                       e.currentTarget.style.transform = "translateY(0)"
                     }}
                   >
-                    <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} stickers={p.stickers || []} />
+                    <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
                   </div>
                 </Link>
               </div>
