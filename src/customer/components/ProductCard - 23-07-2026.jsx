@@ -1,8 +1,20 @@
-// src/customer/components/ProductCard.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getProductReviews } from "../../utils/websiteApi";
+import StarRating from "./StarRating";
 
-function ProductCard({ name, price, image }) {
+function ProductCard({ productId, name, price, image }) {
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [rating, setRating] = useState({ average: 0, count: 0 })
+
+  useEffect(() => {
+    if (!productId) return
+    getProductReviews(productId)
+      .then(res => {
+        const data = res?.data ?? res
+        setRating({ average: data?.average_rating || 0, count: data?.review_count || 0 })
+      })
+      .catch(() => {})
+  }, [productId])
 
   return (
     <div className="single-product-item" style={{ padding: '0 8px' }}>
@@ -40,12 +52,11 @@ function ProductCard({ name, price, image }) {
         </ul>*/}
       </div>
       <div className="single-product-item-content">
-        <div className="single-product-item-rating">
-          <i className="icon-rt-star-solid select-star"></i>
-          <i className="icon-rt-star-solid select-star"></i>
-          <i className="icon-rt-star-solid select-star"></i>
-          <i className="icon-rt-star-solid select-star"></i>
-          <i className="icon-rt-star-solid"></i>
+        <div className="single-product-item-rating" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <StarRating value={rating.average} size={13} />
+          {rating.count > 0 && (
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>({rating.count})</span>
+          )}
         </div>
         <h6 className="single-product-item-title">
           <a href="#">{name}</a>
@@ -55,7 +66,6 @@ function ProductCard({ name, price, image }) {
           <a href="#"><i className="fa fa-shopping-cart"></i>&nbsp; Add to cart</a>
         </div> */}
       </div>
-
       <style>{`
         @keyframes pc-shimmer {
           0%   { background-position: -400px 0 }
@@ -65,5 +75,4 @@ function ProductCard({ name, price, image }) {
     </div>
   );
 }
-
 export default ProductCard;

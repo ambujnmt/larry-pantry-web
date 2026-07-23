@@ -30,6 +30,16 @@ const NAV = [
     ],
   },
   {
+    section: "PAGES",
+    items: [
+      { to: "/admin/pages/about-us",          icon: "fa-file-lines",    label: "About Us" },
+      { to: "/admin/pages/terms-conditions",  icon: "fa-file-contract", label: "Terms & Conditions" },
+      { to: "/admin/pages/privacy-policy", icon: "fa-user-shield", label: "Privacy Policy" },
+      { to: "/admin/faqs", icon: "fa-question", label: "FAQs" },
+      { to: "/admin/testimonials", icon: "fa-quote-left", label: "Testimonials" },
+    ],
+  },
+  {
     section: "ACCOUNT",
     items: [
       { to: "/admin/account", icon: "fa-circle-user", label: "My Account" },

@@ -74,9 +74,8 @@ function Footer() {
                 <ul className="footer-list">
                   <li><Link to="/">Home</Link></li>
                   <li><Link to="/about">About us</Link></li>
-                  <li><Link to="#">Privacy Policy</Link></li>
-                  {/*<li><Link to="#">Wishlist</Link></li>*/}
-                  <li><Link to="/customer">Orders</Link></li>
+                  <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+                  <li><Link to="/terms-conditions">Term & Conditions</Link></li>
                 </ul>
               </div>
             </div>
@@ -88,7 +87,7 @@ function Footer() {
                   <li><Link to="#">Food Menu</Link></li>
                   <li><Link to="/categories">Categories</Link></li>
                   <li><Link to="#">Special Offers / Deals</Link></li>
-                  <li><Link to="/qa">Q & A</Link></li>
+                  <li><Link to="/qa">FAQ</Link></li>
                 </ul>
               </div>
             </div>
@@ -98,6 +97,7 @@ function Footer() {
                 <h6 className="footer-title">MY ACCOUNT</h6>
                 <ul className="footer-list">
                   <li><Link to="/customer">Login</Link></li>
+                  <li><Link to="/customer/orders">Orders</Link></li>
                   <li><Link to="/contact">Contact Us</Link></li>
                 </ul>
               </div>

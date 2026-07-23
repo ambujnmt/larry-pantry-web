@@ -126,10 +126,10 @@ function Messages() {
                       </span>
                     </td>
                     <td className="align-middle">
-                      <button className="btn btn-sm btn-outline-primary me-2" onClick={() => openView(msg)}>
+                      <button className="btn btn-sm btn-outline-primary m-1" onClick={() => openView(msg)}>
                         <i className="fa fa-eye" />
                       </button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(msg.id)} disabled={deleting === msg.id}>
+                      <button className="btn btn-sm btn-outline-danger m-1" onClick={() => handleDelete(msg.id)} disabled={deleting === msg.id}>
                         {deleting === msg.id
                           ? <span className="spinner-border spinner-border-sm" />
                           : <i className="fa fa-trash" />

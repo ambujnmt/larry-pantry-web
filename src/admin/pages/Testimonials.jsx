@@ -1,52 +1,59 @@
+// src/admin/pages/Testimonials.jsx
 import { useState, useEffect, useRef } from "react"
 import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'
-import { getCategories, createCategory, updateCategory, deleteCategory, dtOptions } from "../../utils/adminApi"
+import { getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial, dtOptions } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
 
 DataTable.use(DT)
 
-function Categories() {
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [saving, setSaving]         = useState(false)
-  const [deleting, setDeleting]     = useState(null)
-  const [error, setError]           = useState("")
-  const [success, setSuccess]       = useState("")
+function Testimonials() {
+  const [testimonials, setTestimonials] = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [saving, setSaving]             = useState(false)
+  const [deleting, setDeleting]         = useState(null)
+  const [error, setError]               = useState("")
+  const [success, setSuccess]           = useState("")
 
-  const [showModal, setShowModal]       = useState(false)
-  const [editItem, setEditItem]         = useState(null)
-  // 1. ADDED sort_order in initial state
-  const [form, setForm]                 = useState({ category_name: "", status: 1, sort_order: 0 })
+  const [showModal, setShowModal] = useState(false)
+  const [editItem, setEditItem]   = useState(null)
+  const [form, setForm] = useState({
+    name: "", designation: "", description: "", rating: 5, status: 1, sort_order: 0
+  })
   const [imageFile, setImageFile]       = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const fileRef = useRef()
 
-  const loadCategories = async () => {
+  const loadTestimonials = async () => {
     try {
       setLoading(true)
-      const data = await getCategories()
-      setCategories(data.data || [])
+      const data = await getTestimonials()
+      setTestimonials(data.data || [])
     } catch (err) {
       setError(err.message)
     } finally { setLoading(false) }
   }
 
-  useEffect(() => { loadCategories() }, [])
+  useEffect(() => { loadTestimonials() }, [])
 
-  // 2. RESET Form for Add
   const openAdd = () => {
     setEditItem(null)
-    setForm({ category_name: "", status: 1, sort_order: 0 })
+    setForm({ name: "", designation: "", description: "", rating: 5, status: 1, sort_order: 0 })
     setImageFile(null); setImagePreview(null); setError("")
     setShowModal(true)
   }
 
-  // 3. SET Form for Edit
-  const openEdit = (cat) => {
-    setEditItem(cat)
-    setForm({ category_name: cat.category_name, status: cat.status, sort_order: cat.sort_order ?? 0 })
-    setImageFile(null); setImagePreview(cat.image || null); setError("")
+  const openEdit = (t) => {
+    setEditItem(t)
+    setForm({
+      name: t.name,
+      designation: t.designation || "",
+      description: t.description || "",
+      rating: t.rating ?? 5,
+      status: t.status,
+      sort_order: t.sort_order ?? 0
+    })
+    setImageFile(null); setImagePreview(t.image || null); setError("")
     setShowModal(true)
   }
 
@@ -59,29 +66,31 @@ function Categories() {
     setImagePreview(URL.createObjectURL(file))
   }
 
-  // 4. APPEND sort_order to FormData
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!form.category_name.trim()) { setError("Category name is required."); return }
+    if (!form.name.trim()) { setError("Name is required."); return }
     setSaving(true); setError("")
     try {
       const formData = new FormData()
-      formData.append("category_name", form.category_name)
+      formData.append("name", form.name)
+      formData.append("designation", form.designation)
+      formData.append("description", form.description)
+      formData.append("rating", form.rating)
       formData.append("status", form.status)
-      formData.append("sort_order", form.sort_order) // <--- APPENDED
+      formData.append("sort_order", form.sort_order)
       if (imageFile) formData.append("image", imageFile)
 
       if (editItem) {
-        const data = await updateCategory(editItem.id, formData)
-        setCategories(prev => prev.map(c => c.id === editItem.id ? data.data : c))
-        setSuccess("Category updated successfully!")
+        const data = await updateTestimonial(editItem.id, formData)
+        setTestimonials(prev => prev.map(t => t.id === editItem.id ? data.data : t))
+        setSuccess("Testimonial updated successfully!")
       } else {
-        const data = await createCategory(formData)
-        setCategories(prev => [data.data, ...prev])
-        setSuccess("Category added successfully!")
+        const data = await createTestimonial(formData)
+        setTestimonials(prev => [data.data, ...prev])
+        setSuccess("Testimonial added successfully!")
       }
       closeModal()
-      loadCategories() // Refresh list so ordering updates instantly
+      loadTestimonials()
       setTimeout(() => setSuccess(""), 3000)
     } catch (err) {
       setError(err.message || "Something went wrong.")
@@ -89,12 +98,12 @@ function Categories() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?")) return
+    if (!window.confirm("Are you sure you want to delete this testimonial?")) return
     setDeleting(id)
     try {
-      await deleteCategory(id)
-      setCategories(prev => prev.filter(c => c.id !== id))
-      setSuccess("Category deleted successfully!")
+      await deleteTestimonial(id)
+      setTestimonials(prev => prev.filter(t => t.id !== id))
+      setSuccess("Testimonial deleted successfully!")
       setTimeout(() => setSuccess(""), 3000)
     } catch (err) {
       setError(err.message || "Delete failed.")
@@ -104,12 +113,12 @@ function Categories() {
   return (
     <>
       <AdminPageHeader
-        icon="fa-layer-group"
-        title="Categories"
-        subtitle="Manage product categories"
+        icon="fa-quote-right"
+        title="Testimonials"
+        subtitle="Manage customer testimonials"
         right={
           <button className="btn text-white" style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 8 }} onClick={openAdd}>
-            <i className="fa fa-plus me-2" />Add Category
+            <i className="fa fa-plus me-2" />Add Testimonial
           </button>
         }
       />
@@ -138,7 +147,7 @@ function Categories() {
               options={{
                 ...dtOptions,
                 columnDefs: [
-                  { orderable: false, targets: [1, 5] }
+                  { orderable: false, targets: [1, 6] }
                 ]
               }}
             >
@@ -147,41 +156,38 @@ function Categories() {
                   <th>#</th>
                   <th>Image</th>
                   <th>Name</th>
+                  <th>Designation</th>
                   <th>Sort Order</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {categories.length === 0 ? (
-                  <></>
-                ) : categories.map((cat, index) => (
-                  <tr key={cat.id}>
+                {testimonials.map((t, index) => (
+                  <tr key={t.id}>
                     <td className="align-middle">{index + 1}</td>
                     <td>
                       <img
-                        src={cat.image || "/admin-assets/images/placeholder.png"}
-                        alt={cat.category_name}
+                        src={t.image || "/admin-assets/images/placeholder.png"}
+                        alt={t.name}
                         onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
-                        style={{width:45, height:45, borderRadius:8, objectFit:'cover', border:'1px solid #e2e8f0'}}
+                        style={{width:45, height:45, borderRadius:'50%', objectFit:'cover', border:'1px solid #e2e8f0'}}
                       />
                     </td>
-                    <td className="align-middle fw-semibold">{cat.category_name}</td>
-                    
-                    {/* 6. TABLE ROW DATA */}
-                    <td className="align-middle fw-bold text-primary">{cat.sort_order ?? 0}</td>
-
+                    <td className="align-middle fw-semibold">{t.name}</td>
+                    <td className="align-middle text-muted">{t.designation}</td>
+                    <td className="align-middle fw-bold text-primary">{t.sort_order ?? 0}</td>
                     <td className="align-middle">
-                      <span className={`badge ${cat.status == 1 ? 'bg-success' : 'bg-secondary'}`}>
-                        {cat.status == 1 ? 'Active' : 'Inactive'}
+                      <span className={`badge ${t.status == 1 ? 'bg-success' : 'bg-secondary'}`}>
+                        {t.status == 1 ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="align-middle text-nowrap">
-                      <button className="btn btn-sm btn-outline-primary m-1" onClick={() => openEdit(cat)}>
+                      <button className="btn btn-sm btn-outline-primary m-1" onClick={() => openEdit(t)}>
                         <i className="fa fa-edit" />
                       </button>
-                      <button className="btn btn-sm btn-outline-danger m-1" onClick={() => handleDelete(cat.id)} disabled={deleting === cat.id}>
-                        {deleting === cat.id
+                      <button className="btn btn-sm btn-outline-danger m-1" onClick={() => handleDelete(t.id)} disabled={deleting === t.id}>
+                        {deleting === t.id
                           ? <span className="spinner-border spinner-border-sm" />
                           : <i className="fa fa-trash" />
                         }
@@ -202,7 +208,7 @@ function Categories() {
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">{editItem ? "Edit Category" : "Add Category"}</h5>
+                  <h5 className="modal-title">{editItem ? "Edit Testimonial" : "Add Testimonial"}</h5>
                   <button type="button" className="btn-close" onClick={closeModal} />
                 </div>
                 <form onSubmit={handleSave}>
@@ -218,9 +224,9 @@ function Categories() {
                       <div style={{position:'relative', display:'inline-block'}}>
                         <img
                           src={imagePreview || "/admin-assets/images/placeholder.png"}
-                          alt="Category"
+                          alt="Testimonial"
                           onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
-                          style={{width:90, height:90, borderRadius:10, objectFit:'cover', border:'2px solid #e2e8f0'}}
+                          style={{width:90, height:90, borderRadius:'50%', objectFit:'cover', border:'2px solid #e2e8f0'}}
                         />
                         <button type="button" onClick={() => fileRef.current.click()}
                           style={{position:'absolute', bottom:0, right:0, width:28, height:28, borderRadius:'50%',
@@ -233,29 +239,50 @@ function Categories() {
                       <div className="mt-2" style={{fontSize:12, color:'#a0aec0'}}>Click camera to change image</div>
                     </div>
 
-                    <div className="mb-3">
-                      <label className="form-label small text-secondary">Category Name <span className="text-danger">*</span></label>
-                      <input type="text" className="form-control" placeholder="Enter category name"
-                        value={form.category_name}
-                        onChange={e => setForm({...form, category_name: e.target.value})} required />
+                    <div className="row">
+                      <div className="col-md-6 mb-3">
+                        <label className="form-label small text-secondary">Name <span className="text-danger">*</span></label>
+                        <input type="text" className="form-control" placeholder="Enter customer name"
+                          value={form.name}
+                          onChange={e => setForm({...form, name: e.target.value})} required />
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+                        <label className="form-label small text-secondary">Designation</label>
+                        <input type="text" className="form-control" placeholder="e.g. Engineer, Customer"
+                          value={form.designation}
+                          onChange={e => setForm({...form, designation: e.target.value})} />
+                      </div>
                     </div>
 
-                    {/* 7. MODAL SORT ORDER INPUT */}
                     <div className="mb-3">
-                      <label className="form-label small text-secondary">Sort Order</label>
-                      <input type="number" min="0" className="form-control" placeholder="0"
-                        value={form.sort_order}
-                        onChange={e => setForm({...form, sort_order: e.target.value})} />
-                      <small className="text-muted" style={{fontSize:11}}>Lower number shows first (e.g., 0, 1, 2...)</small>
+                      <label className="form-label small text-secondary">Testimonial Text</label>
+                      <textarea className="form-control" rows="4" placeholder="What did they say?"
+                        value={form.description}
+                        onChange={e => setForm({...form, description: e.target.value})} />
                     </div>
 
-                    <div className="mb-3">
-                      <label className="form-label small text-secondary">Status</label>
-                      <select className="form-select" value={form.status}
-                        onChange={e => setForm({...form, status: e.target.value})}>
-                        <option value={1}>Active</option>
-                        <option value={0}>Inactive</option>
-                      </select>
+                    <div className="row">
+                      {/*<div className="col-6 mb-3">
+                        <label className="form-label small text-secondary">Rating (1-5)</label>
+                        <input type="number" min="1" max="5" className="form-control"
+                          value={form.rating}
+                          onChange={e => setForm({...form, rating: e.target.value})} />
+                      </div>*/}
+                      <div className="col-6 mb-3">
+                        <label className="form-label small text-secondary">Sort Order</label>
+                        <input type="number" min="0" className="form-control" placeholder="0"
+                          value={form.sort_order}
+                          onChange={e => setForm({...form, sort_order: e.target.value})} />
+                      </div>
+                      <div className="col-6 mb-3">
+                        <label className="form-label small text-secondary">Status</label>
+                        <select className="form-select" value={form.status}
+                          onChange={e => setForm({...form, status: e.target.value})}>
+                          <option value={1}>Active</option>
+                          <option value={0}>Inactive</option>
+                        </select>
+                      </div>
                     </div>
 
                   </div>
@@ -264,7 +291,7 @@ function Categories() {
                     <button type="submit" className="btn text-white" style={{background:'#0e606c'}} disabled={saving}>
                       {saving
                         ? <><span className="spinner-border spinner-border-sm me-2" />Saving...</>
-                        : <><i className="fa fa-save me-2" />{editItem ? "Update" : "Add Category"}</>
+                        : <><i className="fa fa-save me-2" />{editItem ? "Update" : "Add Testimonial"}</>
                       }
                     </button>
                   </div>
@@ -279,4 +306,4 @@ function Categories() {
   )
 }
 
-export default Categories
+export default Testimonials

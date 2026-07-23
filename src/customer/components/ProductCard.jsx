@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { getProductReviews } from "../../utils/websiteApi";
 import StarRating from "./StarRating";
 
-function ProductCard({ productId, name, price, image }) {
+function ProductCard({ productId, name, price, image, stickers = [] }) {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [rating, setRating] = useState({ average: 0, count: 0 })
-
   useEffect(() => {
     if (!productId) return
     getProductReviews(productId)
@@ -15,7 +14,6 @@ function ProductCard({ productId, name, price, image }) {
       })
       .catch(() => {})
   }, [productId])
-
   return (
     <div className="single-product-item" style={{ padding: '0 8px' }}>
       <div className="single-product-item-image">
@@ -37,6 +35,27 @@ function ProductCard({ productId, name, price, image }) {
             onLoad={() => setImgLoaded(true)}
             style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
           />
+
+          {/* Sticker badges (Gluten Free, Kosher, etc.) — top-left of the image */}
+          {stickers?.length > 0 && (
+            <div style={{
+              position: 'absolute', top: 6, left: 6, zIndex: 20000,
+              display: 'flex', flexDirection: 'column', gap: 4,
+            }}>
+              {stickers.slice(0, 3).map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt="sticker"
+                  style={{
+                    width: 26, height: 26, objectFit: 'contain',
+                    background: '#fff', borderRadius: 6,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)', padding: 2,
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </a>
         {/*<ul className="single-product-item-action">
           <li className="single-product-item-action-list">

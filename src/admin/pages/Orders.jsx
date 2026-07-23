@@ -130,8 +130,11 @@ function Orders() {
     tab === "All" ? orders.length : orders.filter(o => (o.status || "pending").toLowerCase() === tab.toLowerCase()).length
 
   const dtOptions = {
-    pageLength: 10,
-    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+    pageLength: 50,
+    lengthMenu: [
+      [50, 100, 200, 500, -1],
+      [50, 100, 200, 500, "All"]
+    ],
     order: [],
     language: {
       search: "Search:",
@@ -202,7 +205,7 @@ function Orders() {
               options={{
                 ...dtOptions,
                 columnDefs: [
-                  { orderable: false, targets: [4, 5] }
+                  { orderable: false, targets: [5] }
                 ]
               }}
             >
@@ -276,11 +279,11 @@ function Orders() {
                       </td>
                       <td className="align-middle">
                         <button
-                          className="btn btn-sm btn-outline-primary me-1"
+                          className="btn btn-sm btn-outline-primary m-1"
                           onClick={() => openOrderDetail(order)}
                           title="View Order"
                         >
-                          <i className="fa fa-eye me-1" />View
+                          <i className="fa fa-eye m-1" />View
                         </button>
 
                         {order.invoice_url && (
@@ -288,15 +291,15 @@ function Orders() {
                             href={order.invoice_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn-sm btn-success me-1"
+                            className="btn btn-sm btn-success m-1"
                             title="View Invoice"
                           >
-                            <i className="fa-solid fa-file-pdf me-1" />Invoice
+                            <i className="fa-solid fa-file-pdf m-1" />Invoice
                           </a>
                         )}
 
                         <button
-                          className={`btn btn-sm ${order.invoice_url ? "btn-outline-success" : "btn-outline-warning"}`}
+                          className={`btn btn-sm m-1 ${order.invoice_url ? "btn-outline-success" : "btn-outline-warning"}`}
                           onClick={() => triggerInvoiceUpload(order)}
                           disabled={isUploadingInvoice}
                           title={order.invoice_url ? "Update Invoice" : "Upload Invoice"}
@@ -304,16 +307,16 @@ function Orders() {
                           {isUploadingInvoice ? (
                               <span className="spinner-border spinner-border-sm" />
                             ) : order.invoice_url ? (
-                              <i className="fa-solid fa-pencil"></i>
+                              <i className="fa-solid fa-pencil m-1"></i>
                             ) : (
                               <>
-                                <i className="fa-solid fa-upload me-1"></i>
+                                <i className="fa-solid fa-upload m-1"></i>
                                 Upload
                               </>
                             )}
                         </button>
                         {/*<button onClick={() => generateInvoicePdf(order)} className="btn btn-sm btn-outline-secondary">
-                          <i className="fa-solid fa-file-invoice me-1" />Generate Invoice
+                          <i className="fa-solid fa-file-invoice m-1" />Generate Invoice
                         </button>*/}
                       </td>
                     </tr>

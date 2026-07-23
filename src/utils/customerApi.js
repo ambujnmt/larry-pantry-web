@@ -156,3 +156,7 @@ export const getMyProductReview = (productId) =>
 
 export const deleteProductReview = (productId) =>
   client(`/products/${productId}/review`, { method: "DELETE", auth: true })
+
+// Rating summary + paginated review list for a product (public data, no auth needed)
+export const getProductReviews = (productId, page = 1) =>
+  client(`/products/${productId}/reviews`, { method: "POST", body: { page } })

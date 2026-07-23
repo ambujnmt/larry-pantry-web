@@ -121,7 +121,7 @@ function AdminLogin() {
                       <div className="position-relative">
                         <span className="al-icon"><i className="fa fa-envelope" /></span>
                         <input id="al-email" type="email" className="form-control al-input"
-                          placeholder="admin@larrypantry.com"
+                          placeholder="Please enter your email ID"
                           value={email}
                           onChange={e => setEmail(e.target.value)}
                           autoComplete="email" required />
@@ -193,7 +193,7 @@ function AdminLogin() {
                         <div className="position-relative">
                           <span className="al-icon"><i className="fa fa-envelope" /></span>
                           <input id="al-reset-email" type="email" className="form-control al-input"
-                            placeholder="admin@larrypantry.com"
+                            placeholder="Please enter your email ID"
                             value={resetEmail}
                             onChange={e => setResetEmail(e.target.value)}
                             autoComplete="email" required />

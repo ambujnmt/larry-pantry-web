@@ -269,7 +269,7 @@ function Home() {
             <div className="product-slider-active-4" key={activeCat}>
               {filteredBestSellers.map(p => (
                 <Link to={`/product/${p.slug || p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
+                  <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} stickers={p.stickers || []} />
                 </Link>
               ))}
             </div>
@@ -279,12 +279,13 @@ function Home() {
       {/* Best Sellers Section End */}
 
       {/* New Arrivals Section Start */}
-      <section className="product-item-section pb-5">
+      <section className="product-item-section pb-5 mt-4">
         <div className="container">
           <div className="row">
             <div className="col-12 position-relative">
               <div className="section-title-wrap">
-                <h2 className="section-title">New Arrivals</h2>
+                {/*<h2 className="section-title">New Arrivals</h2>*/}
+                <h2 className="section-title">Special Offers</h2>
                 <p>Check out our new collection and see what's new. Be sure to review the product details before placing your order.</p>
               </div>
             </div>

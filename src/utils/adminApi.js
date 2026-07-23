@@ -161,7 +161,6 @@ export const getLogoSettings = () => client("/admin/settings/logo", { auth: true
 export const updateLogoSettings = (formData) => formRequest("/admin/settings/logo", formData)
 
 // ─── Sliders ──────────────────────────────────────────────────────────────────
-
 export const getSliders = () => client("/admin/sliders", { auth: true })
 export const getSlider = (id) => client(`/admin/sliders/${id}`, { auth: true })
 export const createSlider = (formData) => formRequest("/admin/sliders", formData)
@@ -170,17 +169,37 @@ export const deleteSlider = (id) => client(`/admin/sliders/${id}`, { method: "DE
 export const updateSliderStatus = (id, status) => client(`/admin/sliders/${id}/status`, { method: "POST", auth: true, body: { status } })
 
 // ─── Contact Messages ─────────────────────────────────────────────────────────
-
 export const getContactMessages   = ()   => client("/admin/messages", { auth: true })
 export const getContactMessage    = (id) => client(`/admin/messages/${id}`, { auth: true })
 export const deleteContactMessage = (id) => client(`/admin/messages/${id}`, { method: "DELETE", auth: true })
 
 // ─── Newsletter Subscribers ────────────────────────────────────────────────
-
 export const getNewsletterSubscribers   = ()   => client("/admin/newsletter-subscribers", { auth: true })
 export const deleteNewsletterSubscriber = (id) => client(`/admin/newsletter-subscribers/${id}`, { method: "DELETE", auth: true })
 
 // ─── Bottom Banners ─────────────────────────────────────────────────────────
-
 export const getBottomBannerSettings = () => client("/admin/settings/bottom-banners", { auth: true })
 export const updateBottomBannerSettings = (formData) => formRequest("/admin/settings/bottom-banners", formData)
+
+// ─── Product Reviews ────────────────────────────────────────────────────────
+export const getProductReviews = (productId, page = 1) => client(`/website/products/${productId}/reviews`, { method: "POST", body: { page } })
+
+// ─── Pages (About Us, Terms & Conditions, etc.) ──────────────────────────────
+export const getPage = (slug) => client(`/admin/pages/${slug}`, { auth: true })
+export const updatePage = (slug, formData) => formRequest(`/admin/pages/${slug}`, formData)
+
+// ─── FAQs ─────────────────────────────────────────────────────────────────────
+export const getFaqs = () => client("/admin/faqs", { auth: true })
+export const createFaq = (data) => client("/admin/faqs", { method: "POST", auth: true, body: data })
+export const getFaq = (id) => client(`/admin/faqs/${id}`, { auth: true })
+export const updateFaq = (id, data) => client(`/admin/faqs/${id}`, { method: "POST", auth: true, body: data })
+export const updateFaqStatus = (id, status) => client(`/admin/faqs/${id}/status`, { method: "POST", auth: true, body: { status } })
+export const deleteFaq = (id) => client(`/admin/faqs/${id}`, { method: "DELETE", auth: true })
+
+// ─── Testimonials ───────────────────────────────────────────────────────────
+export const getTestimonials = () => client("/admin/testimonials", { auth: true })
+export const getTestimonial = (id) => client(`/admin/testimonials/${id}`, { auth: true })
+export const createTestimonial = (formData) => formRequest("/admin/testimonials", formData)
+export const updateTestimonial = (id, formData) => formRequest(`/admin/testimonials/${id}`, formData)
+export const updateTestimonialStatus = (id, status) => client(`/admin/testimonials/${id}/status`, { method: "POST", auth: true, body: { status } })
+export const deleteTestimonial = (id) => client(`/admin/testimonials/${id}`, { method: "DELETE", auth: true })

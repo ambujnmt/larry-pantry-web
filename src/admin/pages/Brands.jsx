@@ -91,9 +91,9 @@ function Brands() {
                     <td className="align-middle">{i + 1}</td>
                     <td className="align-middle"><span className="badge border text-black fs-6 fw-normal">{brand.brand_name}</span></td>
                     <td className="align-middle"><span className={`badge ${brand.status == 1 ? "bg-success" : "bg-secondary"}`}>{brand.status == 1 ? "Active" : "Inactive"}</span></td>
-                    <td className="align-middle">
-                      <button className="btn btn-sm btn-outline-primary me-2" onClick={() => openModal(brand)}><i className="fa fa-edit" /></button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(brand.id)} disabled={deletingId === brand.id}>
+                    <td className="align-middle text-nowrap">
+                      <button className="btn btn-sm btn-outline-primary m-1" onClick={() => openModal(brand)}><i className="fa fa-edit" /></button>
+                      <button className="btn btn-sm btn-outline-danger m-1" onClick={() => handleDelete(brand.id)} disabled={deletingId === brand.id}>
                         {deletingId === brand.id ? <span className="spinner-border spinner-border-sm" /> : <i className="fa fa-trash" />}
                       </button>
                     </td>

@@ -3,80 +3,37 @@ import Breadcrumb from "../components/Breadcrumb";
 import ContactBanner from "../components/ContactBanner";
 import Newsletter from "../components/Newsletter";
 import FeatureIcons from "../components/FeatureIcons";
+import { getWebsiteFaqs } from "../../utils/websiteApi";
 
 function Faq() {
-  // Accordion open/close state manage karne ke liye
+  // To manage the accordion's open/closed state
   const [openFaq, setOpenFaq] = useState(null);
+  const [faqData, setFaqData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
   useEffect(() => {
-    // Agar future mein FAQs page par kisi slider ki zaroorat pade toh use yahan load kar sakte hain
+    getWebsiteFaqs()
+      .then(res => setFaqData(res.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    // If a slider is needed on the Fox page in the future, it can be loaded here.
     setTimeout(() => {
       const $ = window.$;
       if (!$) return;
       try {
-        // Slick ya doosre jQuery plugins ka code yahan aa sakta hai
+        // Code for Slick or other jQuery plugins can go here.
       } catch(e) {
         console.log("jQuery error:", e);
       }
     }, 500);
   }, []);
-
-  const faqData = [
-      {
-        question: "Are all Restaurant Pantry LA products Kosher / Glatt Kosher?",
-        answer:
-          "Yes, all RPLA items are Kosher / Glatt Kosher. All processed food products display recognized symbols of certified kosher supervision."
-      },
-      {
-        question: "Who can order?",
-        answer:
-          "Our products may be purchased by anyone."
-      },
-      {
-        question: "Do you deliver?",
-        answer:
-          "We only deliver. There is no pickup option."
-      },
-      {
-        question: "What is your minimum order?",
-        answer:
-          "Our minimum order varies depending on the distance involved. Feel free to contact us via phone or email with your exact requirements."
-      },
-      {
-        question: "Are the prices on the website guaranteed?",
-        answer:
-          "Yes, except for produce. Produce item pricing is subject to a 10% variation without prior notice."
-      },
-      {
-        question: "What are your operating hours?",
-        answer:
-          "Sunday through Thursday, 9:00 a.m. – 5:00 p.m."
-      },
-      {
-        question: "What is the order deadline for next-day orders?",
-        answer:
-          "Orders placed by 7:00 p.m. on the previous evening will be delivered on the next operating business day."
-      },
-      {
-        question: "Is same-day delivery possible?",
-        answer:
-          "In certain cases, same-day delivery is available. If ordering online, please call us to confirm whether same-day delivery is possible."
-      },
-      {
-        question: "What forms of payment are accepted?",
-        answer:
-          "We accept Zelle, Venmo, check, and cash."
-      },
-      {
-        question: "Are you open to adding products that are not currently listed on your website?",
-        answer:
-          "Absolutely! Please contact us by phone or email with the product specifications and desired quantity. We will do our best to source the item and make you a happy customer."
-      }
-    ];
 
   return (
     <main>
@@ -89,7 +46,7 @@ function Faq() {
         <div className="container">
           <div className="row">
             
-            {/* Left Side: Banner Image (Jaise About Us mein tha) */}
+            {/* Left side: Banner image (like the one in 'About Us') */}
             <div className="col-md-4">
               <div className="banner text-center">
                 <img src="/assets/img/faq.jpg" alt="FAQ Graphic" />
@@ -106,9 +63,13 @@ function Faq() {
 
                 {/* React Native Accordion Wrapper */}
                 <div className="faq-accordion-wrapper" style={{ marginTop: '30px' }}>
-                  {faqData.map((faq, index) => (
+                  {loading ? (
+                    <p className="text-muted">Loading...</p>
+                  ) : faqData.length === 0 ? (
+                    <p className="text-muted">No FAQs available right now.</p>
+                  ) : faqData.map((faq, index) => (
                     <div 
-                      key={index} 
+                      key={faq.id ?? index} 
                       className={`faq-item ${openFaq === index ? 'active' : ''}`}
                       style={{ 
                         borderBottom: '1px solid #eee', 
