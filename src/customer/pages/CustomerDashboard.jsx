@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { getProfile, getAssignedProducts, STORAGE_URL } from "../../utils/customerApi"
 import { getMyOrders } from "../../utils/customerApi"
+import WelcomePopupModal from "../components/WelcomePopupModal"
 
 const STAT_COLOR = {
   teal:   { bg: '#0e606c', light: '#e6f4f5' },
@@ -82,6 +83,7 @@ function CustomerDashboard() {
 
   return (
     <>
+    <WelcomePopupModal mode="customer" />
       {/* Welcome Banner */}
       <div className="app-card shadow-sm mb-4" style={{
         borderRadius: 14, overflow: 'hidden', border: 'none',

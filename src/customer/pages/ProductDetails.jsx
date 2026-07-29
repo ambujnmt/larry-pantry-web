@@ -11,6 +11,7 @@ function ProductDetails() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState("")
   const [activeImage, setActiveImage] = useState(null)
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState(0)
 
   const [related, setRelated]         = useState([])
   const [relatedLoading, setRelatedLoading] = useState(false)
@@ -27,6 +28,10 @@ function ProductDetails() {
         const res = await getProductDetails(slug)
         setProduct(res.data)
         setActiveImage(res.data?.primary_image?.image_url || null)
+        // Default to the product's marked default variant, else the first one
+        const variants = res.data?.variants || []
+        const defaultIdx = variants.findIndex(v => v.is_default == 1)
+        setSelectedVariantIdx(defaultIdx >= 0 ? defaultIdx : 0)
       } catch (err) {
         setError(err.message || "Failed to load product.")
       } finally {
@@ -90,9 +95,14 @@ function ProductDetails() {
     el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: "smooth" })
   }
 
-  const getPrice = (p) => {
-    const v = p.variants?.[0]
-    return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
+  // Returns { selling, regular } as numbers (or null) from the product's default/first variant
+  const getPriceData = (p) => {
+    const variants = p.variants || []
+    const v = variants.find(x => x.is_default == 1) || variants[0]
+    if (!v) return { selling: null, regular: null }
+    const selling = v.selling_price != null ? parseFloat(v.selling_price) : null
+    const regular = v.regular_price ? parseFloat(v.regular_price) : null
+    return { selling, regular }
   }
   const getImage = (p) =>
     p.primary_image?.image_url || "/assets/img/no-image.jpg" 
@@ -117,8 +127,57 @@ function ProductDetails() {
 
   const mainImg = activeImage || product.primary_image?.image_url || "/assets/img/no-image.jpg"
 
+  const tags = typeof product.tags === "string"
+    ? product.tags.split(",").map(t => t.trim()).filter(Boolean)
+    : (Array.isArray(product.tags) ? product.tags : [])
+
+  // Currently selected variant + its derived pricing
+  const variants = product.variants || []
+  const selectedVariant = variants[selectedVariantIdx] || variants[0] || null
+  const selRegular = selectedVariant?.regular_price ? parseFloat(selectedVariant.regular_price) : null
+  const selSelling = selectedVariant ? parseFloat(selectedVariant.selling_price || 0) : null
+  const selHasDiscount = selRegular != null && selSelling != null && selRegular > selSelling
+  const selDiscountPercent = selHasDiscount ? Math.round((1 - selSelling / selRegular) * 100) : null
+
   return (
     <main className="container py-5">
+      <style>{`
+        .pd-pill {
+          display: inline-block;
+          padding: 3px 10px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          background: #e6f2f3;
+          color: #0e606c;
+        }
+        .pd-discount-badge {
+          display: inline-block;
+          margin-left: 6px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #16a34a;
+          vertical-align: middle;
+        }
+        .pd-variant-pill {
+          border: 1px solid #d1d5db;
+          background: #fff;
+          color: #374151;
+          font-weight: 500;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: border-color .15s, background .15s, color .15s;
+        }
+        .pd-variant-pill:hover { border-color: #0e606c; }
+        .pd-variant-pill.active {
+          border: 2px solid #0e606c;
+          background: #e6f2f3;
+          color: #0e606c;
+          font-weight: 700;
+        }
+      `}</style>
       <div className="row g-4">
 
         {/* Left: Images */}
@@ -144,7 +203,7 @@ function ProductDetails() {
                     src={url}
                     alt="sticker"
                     style={{
-                      width: 40, height: 40, objectFit: "contain",
+                      width: 96, objectFit: "contain",
                       background: "#fff", borderRadius: 8,
                       boxShadow: "0 1px 4px rgba(0,0,0,0.18)", padding: 3,
                     }}
@@ -191,24 +250,48 @@ function ProductDetails() {
             {product.brand_name && <span className="ms-3">Brand: {product.brand_name}</span>}
           </div>
 
-          {product.variants?.length > 0 && (
-            <table className="table table-bordered w-auto mb-4">
-              <thead>
-                <tr><th>Qty & Unit</th><th>Price</th></tr>
-              </thead>
-              <tbody>
-                {product.variants.map((v, i) => (
-                  <tr key={i}>
-                    <td>{v.quantity} {v.unit_name}</td>
-                    <td className="fw-semibold text-success">${parseFloat(v.selling_price).toFixed(2)}</td>
-                  </tr>
+          {/* Variant selector + price for the selected variant */}
+          {variants.length > 0 && (
+            <div className="mb-4">
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {variants.map((v, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedVariantIdx(i)}
+                    className={`pd-variant-pill ${i === selectedVariantIdx ? "active" : ""}`}
+                  >
+                    {v.quantity} {v.unit_name}
+                  </button>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              {selectedVariant && (
+                <div className="d-flex align-items-baseline gap-2 flex-wrap">
+                  <span style={{ fontSize: 28, fontWeight: 700, color: "#0e606c" }}>
+                    ${selSelling.toFixed(2)}
+                  </span>
+                  {selHasDiscount && (
+                    <>
+                      <span style={{ fontSize: 16, textDecoration: "line-through", color: "#94a3b8" }}>
+                        ${selRegular.toFixed(2)}
+                      </span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "#16a34a" }}>
+                        ↓{selDiscountPercent}% off
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
-          {product.tags && (
-            <div className="mb-3"><strong>Tags: </strong>{product.tags}</div>
+          {tags.length > 0 && (
+            <div className="mb-3">
+              <div className="d-flex flex-wrap gap-1">
+                {tags.map(t => <span key={t} className="pd-pill">{t}</span>)}
+              </div>
+            </div>
           )}
 
           {product.description && (
@@ -299,33 +382,36 @@ function ProductDetails() {
               scrollbarWidth: "none",
             }}
           >
-            {related.map(p => (
-              <div
-                key={p.id}
-                style={{
-                  flex: "0 0 auto",
-                  width: 190,
-                  scrollSnapAlign: "start",
-                }}
-              >
-                <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                  <div
-                    className="border rounded-3 h-100 bg-white"
-                    style={{ transition: "box-shadow .2s, transform .2s" }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)"
-                      e.currentTarget.style.transform = "translateY(-2px)"
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.boxShadow = "none"
-                      e.currentTarget.style.transform = "translateY(0)"
-                    }}
-                  >
-                    <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} stickers={p.stickers || []} />
-                  </div>
-                </Link>
-              </div>
-            ))}
+            {related.map(p => {
+              const { selling, regular } = getPriceData(p)
+              return (
+                <div
+                  key={p.id}
+                  style={{
+                    flex: "0 0 auto",
+                    width: 190,
+                    scrollSnapAlign: "start",
+                  }}
+                >
+                  <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    <div
+                      className="border rounded-3 h-100 bg-white"
+                      style={{ transition: "box-shadow .2s, transform .2s" }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)"
+                        e.currentTarget.style.transform = "translateY(-2px)"
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.boxShadow = "none"
+                        e.currentTarget.style.transform = "translateY(0)"
+                      }}
+                    >
+                      <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
+                    </div>
+                  </Link>
+                </div>
+              )
+            })}
           </div>
         </section>
       )}

@@ -27,6 +27,7 @@ const NAV = [
       { to: "/admin/settings/logo",         icon: "fa-image",        label: "Website Logo" },
       { to: "/admin/sliders", icon: "fa-images", label: "Sliders" },
       { to: "/admin/settings/bottom-banners", icon: "fa-image", label: "Bottom Banners" },
+      { to: "/admin/settings/popup-notice", icon: "fa-bell", label: "Popup Notice" },
     ],
   },
   {

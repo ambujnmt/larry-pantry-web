@@ -1,32 +1,31 @@
-// src/customer/pages/SearchResults.jsx
+// src/customer/pages/SpecialOffers.jsx
 import { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import ContactBanner from "../components/ContactBanner";
 import Newsletter from "../components/Newsletter";
-import FeatureIcons from "../components/FeatureIcons";
-import { searchProducts } from "../../utils/websiteApi";
-function SearchResults() {
-  const [searchParams] = useSearchParams()
-  const query = searchParams.get("q") || ""
+import { getNewArrivals } from "../../utils/websiteApi";
+
+function SpecialOffers() {
   const [products, setProducts] = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState("")
+
   useEffect(() => {
-    if (!query.trim()) { setProducts([]); setLoading(false); return }
     const load = async () => {
       setLoading(true); setError("")
       try {
-        const res = await searchProducts(query)
+        const res = await getNewArrivals()
         setProducts(res.data || [])
       } catch (err) {
-        setError(err.message || "Search failed.")
+        setError(err.message || "Failed to load special offers.")
       } finally {
         setLoading(false)
       }
     }
     load()
-  }, [query])
+  }, [])
+
   // Returns { selling, regular } as numbers (or null) from the product's default/first variant
   const getPriceData = (p) => {
     const variants = p.variants || []
@@ -37,15 +36,16 @@ function SearchResults() {
     return { selling, regular }
   }
   const getImage = (p) => p.primary_image?.image_url || "/assets/img/no-image.jpg"
+
   return (
     <main>
       <section className="breadcrumb-section">
         <div className="container">
           <div className="breadcrumb-content">
-            <h1 className="page-title">Search Results</h1>
+            <h1 className="page-title">Special Offers / Deals</h1>
             <ul className="breadcrumb-page-list">
               <li className="breadcrumb-item"><Link to="/">Home</Link></li>
-              <li className="breadcrumb-item">Search</li>
+              <li className="breadcrumb-item">Special Offers</li>
             </ul>
           </div>
         </div>
@@ -53,7 +53,7 @@ function SearchResults() {
       <section className="page-secton-wrapper section-space-pb">
         <div className="container">
           <p className="mb-4">
-            {loading ? "Searching..." : `${products.length} result${products.length !== 1 ? "s" : ""} for "${query}"`}
+            {loading ? "Loading..." : `${products.length} deal${products.length !== 1 ? "s" : ""} available`}
           </p>
           {loading ? (
             <div className="text-center py-5">
@@ -63,7 +63,7 @@ function SearchResults() {
             <div className="text-center text-danger py-5">{error}</div>
           ) : products.length === 0 ? (
             <div className="text-center text-muted py-5">
-              No products found for "{query}". Try a different keyword.
+              No special offers available right now. Check back soon!
             </div>
           ) : (
             <div className="row g-4">
@@ -83,8 +83,8 @@ function SearchResults() {
       </section>
       <ContactBanner />
       <Newsletter />
-      {/*<FeatureIcons />*/}
     </main>
   )
 }
-export default SearchResults
+
+export default SpecialOffers

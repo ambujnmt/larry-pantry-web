@@ -84,10 +84,11 @@ function Footer() {
               <div className="footer-widget">
                 <h6 className="footer-title">Quick Links</h6>
                 <ul className="footer-list">
-                  <li><Link to="#">Food Menu</Link></li>
+                  {/*<li><Link to="#">Food Menu</Link></li>*/}
                   <li><Link to="/categories">Categories</Link></li>
-                  <li><Link to="#">Special Offers / Deals</Link></li>
+                  <li><Link to="/special-offers">Special Offers / Deals</Link></li>
                   <li><Link to="/qa">FAQ</Link></li>
+                  <li><Link to="/contact">Contact Us</Link></li>
                 </ul>
               </div>
             </div>
@@ -98,7 +99,6 @@ function Footer() {
                 <ul className="footer-list">
                   <li><Link to="/customer">Login</Link></li>
                   <li><Link to="/customer/orders">Orders</Link></li>
-                  <li><Link to="/contact">Contact Us</Link></li>
                 </ul>
               </div>
             </div>
@@ -110,7 +110,7 @@ function Footer() {
         <div className="container">
           <div className="copy-right-content text-center">
             <p>
-              © Copyright 2026. All Rights Reserved. Powered By{" "}
+              © {new Date().getFullYear()} Restaurant Pantry LA. All Rights Reserved. Designed & Developed By{" "}
               <a href="https://www.nmttechnologies.com/" target="_blank">NMT Technologies</a>
             </p>
           </div>

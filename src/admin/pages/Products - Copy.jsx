@@ -35,104 +35,6 @@ function ProductRatingCell({ productId }) {
   return <div className="d-flex align-items-center gap-1"><StarRating value={rating.average} size={13} />{rating.count > 0 && <small className="text-muted">({rating.count})</small>}</div>
 }
 /*------------------------------------*/
-
-/*--------- Tags Input (chip-based, with autocomplete) ----------------*/
-function TagsInput({ value, onChange, suggestions = [] }) {
-  const [input, setInput]                 = useState("")
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const wrapRef  = useRef()
-  const inputRef = useRef()
-
-  const tags = value ? value.split(",").map(t => t.trim()).filter(Boolean) : []
-
-  const addTag = (raw) => {
-    const tag = raw.trim().replace(/,$/, "")
-    if (!tag) return
-    if (tags.some(t => t.toLowerCase() === tag.toLowerCase())) { setInput(""); return } // no duplicates
-    onChange([...tags, tag].join(", "))
-    setInput("")
-  }
-
-  const removeTag = (tag) => onChange(tags.filter(t => t !== tag).join(", "))
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault()
-      addTag(input)
-    } else if (e.key === "Backspace" && !input && tags.length > 0) {
-      removeTag(tags[tags.length - 1]) // quick-remove last chip on backspace
-    }
-  }
-
-  const filteredSuggestions = suggestions
-    .filter(s => s.toLowerCase().includes(input.toLowerCase()) && !tags.some(t => t.toLowerCase() === s.toLowerCase()))
-    .slice(0, 6)
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setShowSuggestions(false)
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  return (
-    <div ref={wrapRef} style={{ position: 'relative' }}>
-      <div
-        className="form-control d-flex flex-wrap gap-1 align-items-center"
-        style={{ minHeight: 42, cursor: 'text' }}
-        onClick={() => inputRef.current?.focus()}
-      >
-        {tags.map(tag => (
-          <span
-            key={tag}
-            className="badge d-flex align-items-center gap-1"
-            style={{ background: '#e6f2f3', color: '#0e606c', fontWeight: 500, fontSize: 12, padding: '5px 8px' }}
-          >
-            {tag}
-            <i
-              className="fa fa-times"
-              style={{ cursor: 'pointer', fontSize: 10 }}
-              onClick={(e) => { e.stopPropagation(); removeTag(tag) }}
-            />
-          </span>
-        ))}
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={e => { setInput(e.target.value); setShowSuggestions(true) }}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setShowSuggestions(true)}
-          onBlur={() => addTag(input)}
-          placeholder={tags.length === 0 ? "Type a tag and press Enter" : ""}
-          style={{ border: 'none', outline: 'none', flex: 1, minWidth: 100, fontSize: 14, background: 'transparent' }}
-        />
-      </div>
-      {showSuggestions && filteredSuggestions.length > 0 && (
-        <div
-          className="border rounded shadow-sm bg-white"
-          style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, marginTop: 2, maxHeight: 160, overflowY: 'auto' }}
-        >
-          {filteredSuggestions.map(s => (
-            <div
-              key={s}
-              className="px-2 py-1 small"
-              style={{ cursor: 'pointer' }}
-              onMouseDown={(e) => { e.preventDefault(); addTag(s) }} // preventDefault so input doesn't blur before click registers
-              onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              {s}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-/*------------------------------------*/
-
 function Products() {
   const [products, setProducts]       = useState([])
   const [categories, setCategories]   = useState([])
@@ -159,16 +61,6 @@ function Products() {
 
   const joditConfig = useMemo(() => ({ height: 300, zIndex: 10100 }), [])
   const [activeImage, setActiveImage] = useState(null)
-
-  // Unique tag suggestions gathered from every product already in the catalog
-  const allTagSuggestions = useMemo(() => {
-    const set = new Set()
-    products.forEach(p => (p.tags || "").split(",").forEach(t => {
-      const trimmed = t.trim()
-      if (trimmed) set.add(trimmed)
-    }))
-    return Array.from(set).sort((a, b) => a.localeCompare(b))
-  }, [products])
 
   useEffect(() => {
     const load = async () => {
@@ -510,13 +402,8 @@ function Products() {
 
                       {/* Tags */}
                       <div className="col-md-8 mb-3">
-                        <label className="form-label small text-secondary">Tags</label>
-                        <TagsInput
-                          value={form.tags}
-                          onChange={val => setForm(prev => ({ ...prev, tags: val }))}
-                          suggestions={allTagSuggestions}
-                        />
-                        <small className="text-muted">Press Enter or comma to add a tag</small>
+                        <label className="form-label small text-secondary">Tags <small className="text-muted">(comma separated)</small></label>
+                        <input type="text" className="form-control" placeholder="chicken, fresh, organic" {...f('tags')} />
                       </div>
 
                       {/* Status */}
@@ -615,7 +502,7 @@ function Products() {
                       <div className="col-12">
                         <label className="form-label small text-secondary d-block">Product Flags</label>
                         <div className="d-flex gap-4">
-                          {[['is_best_seller','best_seller','Best Seller'],['is_new_arrival','new_arrival','Special Offers']].map(([key, id, label]) => (
+                          {[['is_best_seller','best_seller','Best Seller'],['is_new_arrival','new_arrival','New Arrival'],['is_featured','featured','Featured']].map(([key, id, label]) => (
                             <div className="form-check" key={id}>
                               <input className="form-check-input" type="checkbox" id={id}
                                 checked={form[key] == 1}
@@ -705,13 +592,7 @@ function Products() {
                         <div className="col-md-6">
                           <div className="border rounded p-2">
                             <small className="text-muted">Tags</small>
-                            <div className="d-flex flex-wrap gap-1 mt-1">
-                              {viewItem.tags
-                                ? viewItem.tags.split(",").map(t => t.trim()).filter(Boolean).map(t => (
-                                    <span key={t} className="badge" style={{ background: '#e6f2f3', color: '#0e606c', fontWeight: 500 }}>{t}</span>
-                                  ))
-                                : <span className="fw-semibold">—</span>}
-                            </div>
+                            <div className="fw-semibold">{viewItem.tags || '—'}</div>
                           </div>
                         </div>
                       </div>
@@ -744,8 +625,8 @@ function Products() {
                       )}
                       <div className="d-flex gap-2 flex-wrap">
                         {viewItem.is_best_seller == 1 && <span className="badge bg-warning text-dark">Best Seller</span>}
-                        {viewItem.is_new_arrival == 1 && <span className="badge bg-info text-dark">Special Offers</span>}
-                        {/*{viewItem.is_featured == 1 && <span className="badge bg-primary">Featured</span>}*/}
+                        {viewItem.is_new_arrival == 1 && <span className="badge bg-info text-dark">New Arrival</span>}
+                        {viewItem.is_featured == 1 && <span className="badge bg-primary">Featured</span>}
                       </div>
                     </div>
                   </div>

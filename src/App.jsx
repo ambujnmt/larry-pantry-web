@@ -11,6 +11,7 @@ import ProductDetails from "./customer/pages/ProductDetails"
 import SearchResults from "./customer/pages/SearchResults";
 import TermsConditions from "./customer/pages/TermsConditions";
 import PrivacyPolicy from "./customer/pages/PrivacyPolicy";
+import SpecialOffers from "./customer/pages/SpecialOffers"
 /*----- Customer Portal ------*/
 import CustomerLogin            from "./customer/pages/CustomerLogin";
 import CustomerDashboardLayout  from "./customer/layouts/CustomerDashboardLayout";
@@ -44,6 +45,7 @@ import BottomBanners from "./admin/pages/BottomBanners"
 import PageEditor from "./admin/pages/PageEditor"
 import Faqs from "./admin/pages/Faqs"
 import Testimonials from "./admin/pages/Testimonials"
+import PopupNoticeSetting from "./admin/pages/PopupNoticeSetting"
 /*------------------------*/
 
 function App() {
@@ -62,6 +64,7 @@ function App() {
         <Route path="/categories/:categorySlug" element={<><Header /><Categories /><Footer /></>} />
         <Route path="/product/:slug" element={<><Header /><ProductDetails /><Footer /></>} />
         <Route path="/search" element={<><Header /><SearchResults  /><Footer /></>} />
+        <Route path="/special-offers" element={<><Header /><SpecialOffers   /><Footer /></>} />
 
         {/* Customer Portal Routes */}
         <Route path="/customer"     element={<CustomerLogin />} />
@@ -102,6 +105,7 @@ function App() {
         <Route path="/admin/pages/:slug" element={<DashboardLayout><PageEditor /></DashboardLayout>} />
         <Route path="/admin/faqs" element={<DashboardLayout><Faqs /></DashboardLayout>} />
         <Route path="/admin/testimonials" element={<DashboardLayout><Testimonials /></DashboardLayout>} />
+        <Route path="/admin/settings/popup-notice" element={<DashboardLayout><PopupNoticeSetting /></DashboardLayout>} />
 
 
       </Routes>

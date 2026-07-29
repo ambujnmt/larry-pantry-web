@@ -1,3 +1,4 @@
+/*---- src\customer\components\ProductDetailModal.jsx ----*/
 import { STORAGE_URL, getProductReviews } from "../../utils/customerApi"
 import { useState, useEffect } from "react"
 import StarRating from "./StarRating"
@@ -30,7 +31,7 @@ const css = `
     padding: 18px 24px;
     border-bottom: 1px solid #e5e7eb;
     display: flex;
-    align-items: center;
+    align-items: center; 
     justify-content: space-between;
     flex-shrink: 0;
   }
@@ -88,6 +89,25 @@ const css = `
     font-size: 12px; font-weight: 600; margin-right: 6px; margin-top: 8px;
   }
 
+  .pdm-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #e6f2f3;
+    color: #0e606c;
+  }
+
+  .pdm-discount-badge {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    vertical-align: middle;
+  }
+
   .pdm-desc-box {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -136,28 +156,35 @@ function ProductDetailModal({ product, onClose }) {
       <div className="pdm-backdrop" onClick={onClose}>
         <div className="pdm-modal" onClick={e => e.stopPropagation()}>
 
-          {/* ── Header ── */}
+          {/* Header */}
           <div className="pdm-header">
             <h5 className="mb-0 fw-bold" style={{ fontSize: 18, color: "#1e293b" }}>View Product</h5>
-            <button onClick={onClose} style={{
-              background: "none", border: "none", fontSize: 20, color: "#64748b", cursor: "pointer",
-              width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <i className="fa-solid fa-xmark" />
-            </button>
+            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, color: "#64748b", cursor: "pointer", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}><i className="fa-solid fa-xmark" /></button>
           </div>
 
-          {/* ── Body ── */}
+          {/* Body */}
           <div className="pdm-body">
 
             {/* Left: Image + Thumbnails */}
             <div>
-              <img
-                src={mainImage}
-                alt={product.name}
-                onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
-                style={{ width: "100%", height: 240, borderRadius: 10, objectFit: "cover", border: "1px solid #e2e8f0" }}
-              />
+              <div style={{ position: "relative" }}>
+                <img
+                  src={mainImage}
+                  alt={product.name}
+                  onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/placeholder.png" }}
+                  style={{ width: "100%", height: 240, borderRadius: 10, objectFit: "cover", border: "1px solid #e2e8f0" }}
+                />
+
+                {/* Icon badges (Gluten Free, Kosher, etc.) */}
+                {product.stickers?.length > 0 && (
+                  <div style={{ position: "absolute", top: 8, left: 8, display: "flex", flexDirection: "column", gap: 5 }}>
+                    {product.stickers.map((url, i) => (
+                      <img key={i} src={url} alt="icon" style={{ width: 64, objectFit: "contain", background: "#fff", borderRadius: 6, boxShadow: "0 1px 3px rgba(0,0,0,0.18)", padding: 2 }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {images.length > 1 && (
                 <div className="d-flex gap-2 mt-2 flex-wrap">
                   {images.map((img, idx) => {
@@ -182,11 +209,7 @@ function ProductDetailModal({ product, onClose }) {
               <div className="d-flex align-items-start justify-content-between mb-1">
                 <h4 className="fw-bold mb-0" style={{ fontSize: 21, color: "#1e293b" }}>{product.name}</h4>
                 {product.status !== undefined && (
-                  <span style={{
-                    background: Number(product.status) === 1 ? "#dcfce7" : "#fee2e2",
-                    color: Number(product.status) === 1 ? "#166534" : "#991b1b",
-                    padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, flexShrink: 0,
-                  }}>
+                  <span style={{ background: Number(product.status) === 1 ? "#dcfce7" : "#fee2e2", color: Number(product.status) === 1 ? "#166534" : "#991b1b", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
                     {Number(product.status) === 1 ? "Active" : "Inactive"}
                   </span>
                 )}
@@ -215,8 +238,8 @@ function ProductDetailModal({ product, onClose }) {
                 {tags.length > 0 && (
                   <div className="pdm-info-box">
                     <div className="pdm-info-label">Tags</div>
-                    <div className="pdm-info-value" style={{ fontWeight: 500, fontSize: 13 }}>
-                      {tags.join(", ")}
+                    <div className="d-flex flex-wrap gap-1" style={{ marginTop: 4 }}>
+                      {tags.map(t => <span key={t} className="pdm-pill">{t}</span>)}
                     </div>
                   </div>
                 )}
@@ -226,44 +249,41 @@ function ProductDetailModal({ product, onClose }) {
               <div style={{ border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
                 <table className="pdm-table">
                   <thead>
-                    <tr>
-                      <th>Qty & Unit</th>
-                      <th>Regular Price</th>
-                      <th>Selling Price</th>
-                    </tr>
+                    <tr><th>Qty & Unit</th><th>Regular Price</th><th>Selling Price</th></tr>
                   </thead>
                   <tbody>
                     {variants.length === 0 ? (
-                      <tr><td colSpan={4} style={{ textAlign: "center", color: "#94a3b8" }}>No variants available</td></tr>
-                    ) : variants.map((v, idx) => (
-                      <tr key={v.id ?? idx}>
-                        <td>{v.quantity} {v.unit_name || ""}</td>
-                        <td>
-                          {v.regular_price && parseFloat(v.regular_price) !== parseFloat(v.selling_price) ? (
-                            <span style={{ textDecoration: "line-through", color: "#94a3b8" }}>
-                              ${parseFloat(v.regular_price).toFixed(2)}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#94a3b8" }}>—</span>
-                          )}
-                        </td>
-                        <td style={{ color: "#0e606c", fontWeight: 700 }}>
-                          ${parseFloat(v.selling_price || 0).toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
+                      <tr><td colSpan={3} style={{ textAlign: "center", color: "#94a3b8" }}>No variants available</td></tr>
+                    ) : variants.map((v, idx) => {
+                      const regular = v.regular_price ? parseFloat(v.regular_price) : null
+                      const selling = parseFloat(v.selling_price || 0)
+                      const hasDiscount = regular != null && regular > selling
+                      const discountPercent = hasDiscount ? Math.round((1 - selling / regular) * 100) : null
+                      return (
+                        <tr key={v.id ?? idx}>
+                          <td>{v.quantity} {v.unit_name || ""}</td>
+                          <td>
+                            {hasDiscount ? (
+                              <span style={{ textDecoration: "line-through", color: "#94a3b8" }}>${regular.toFixed(2)}</span>
+                            ) : (
+                              <span style={{ color: "#94a3b8" }}>—</span>
+                            )}
+                          </td>
+                          <td style={{ color: "#0e606c", fontWeight: 700 }}>
+                            ${selling.toFixed(2)}
+                            {hasDiscount && <span className="pdm-discount-badge">↓{discountPercent}%</span>}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {(product.is_new_arrival === 1 || product.is_featured === 1) && (
                 <div className="mb-3">
-                  {product.is_new_arrival === 1 && (
-                    <span className="pdm-tag-badge" style={{ background: "#cffafe", color: "#0e7490" }}>New Arrival</span>
-                  )}
-                  {product.is_featured === 1 && (
-                    <span className="pdm-tag-badge" style={{ background: "#dcfce7", color: "#15803d" }}>Featured</span>
-                  )}
+                  {product.is_new_arrival === 1 && <span className="pdm-tag-badge" style={{ background: "#cffafe", color: "#0e7490" }}>New Arrival</span>}
+                  {product.is_featured === 1 && <span className="pdm-tag-badge" style={{ background: "#dcfce7", color: "#15803d" }}>Featured</span>}
                 </div>
               )}
             </div>
@@ -277,21 +297,9 @@ function ProductDetailModal({ product, onClose }) {
             </div>
           </div>
 
-          {/* ── Footer ── */}
-          <div style={{
-            padding: "14px 24px",
-            borderTop: "1px solid #f1f5f9",
-            display: "flex",
-            justifyContent: "flex-end",
-            flexShrink: 0,
-          }}>
-            <button onClick={onClose} style={{
-              background: "#f1f5f9", border: "none", borderRadius: 10,
-              padding: "9px 22px", fontWeight: 600, fontSize: 14,
-              color: "#374151", cursor: "pointer",
-            }}>
-              Close
-            </button>
+          {/* Footer */}
+          <div style={{ padding: "14px 24px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
+            <button onClick={onClose} style={{ background: "#f1f5f9", border: "none", borderRadius: 10, padding: "9px 22px", fontWeight: 600, fontSize: 14, color: "#374151", cursor: "pointer" }}>Close</button>
           </div>
 
         </div>

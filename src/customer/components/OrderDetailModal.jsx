@@ -1,3 +1,4 @@
+/*---- src\customer\components\OrderDetailModal.jsx ----*/
 import { useState, useEffect } from "react"
 import { submitProductReview, getMyProductReview } from "../../utils/customerApi"
 import StarRating from "./StarRating"

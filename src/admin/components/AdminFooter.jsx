@@ -4,7 +4,7 @@ const AdminFooter = () => {
       <div className="container text-center py-3">
 
         <small className="copyright">
-          © 2026 Restaurant Pantry LA. All rights reserved. Powered By{" "}
+          © {new Date().getFullYear()} Restaurant Pantry LA. All rights reserved. Designed & Developed By{" "}
           <a className="app-link" href="https://www.nmttechnologies.com/" target="_blank" rel="noopener noreferrer">NMT Technologies</a>
         </small>
 

@@ -93,7 +93,7 @@ function Messages() {
               className="table table-striped table-bordered table-hover"
               options={{
                 ...dtOptions,
-                order: [[0, 'desc']],
+                // order: [[0, 'desc']],
                 columnDefs: [
                   { orderable: false, targets: [6] }
                 ]

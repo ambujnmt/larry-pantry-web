@@ -1,13 +1,10 @@
-/*---- C:\xampp\htdocs\larry-pantry\src\admin\pages\Users.jsx ----*/
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'
 import Swal from "sweetalert2"
-import { getUsers, getPendingOtpUsers, activatePendingOtpUser, updateUserStatus, deleteUser, dtOptions, STORAGE_URL, getProducts, getUserProducts, assignUserProducts, getUserVariantPrices, saveUserVariantPrices
-} from "../../utils/adminApi"
+import { getUsers, updateUserStatus, deleteUser, dtOptions, STORAGE_URL, getProducts, getUserProducts, assignUserProducts } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
-import PendingOtpUsersModal from "../components/PendingOtpUsersModal"
 
 DataTable.use(DT)
 
@@ -144,151 +141,6 @@ function AssignProductsModal({ user, onClose, onSaved }) {
   )
 }
 
-// Customer-specific price override modal.
-// Shows every variant of every product already assigned to this user,
-// with the default selling price and an optional custom price field.
-// Leaving a field blank keeps the default price for that customer.
-function VariantPricingModal({ user, onClose, onSaved }) {
-  const [rows, setRows] = useState([])
-  const [edits, setEdits] = useState({}) // { [variant_id]: string being typed }
-  const [search, setSearch] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState("")
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await getUserVariantPrices(user.id)
-        const list = Array.isArray(res.data) ? res.data : []
-        setRows(list)
-        const initial = {}
-        list.forEach(r => { initial[r.variant_id] = r.custom_price ?? "" })
-        setEdits(initial)
-      } catch (err) { setError(err.message || "Failed to load prices.") }
-      finally { setLoading(false) }
-    }
-    load()
-  }, [user.id])
-
-  const handleChange = (variantId, value) => setEdits(prev => ({ ...prev, [variantId]: value }))
-  const clearOverride = (variantId) => setEdits(prev => ({ ...prev, [variantId]: "" }))
-
-  const handleSave = async () => {
-    setSaving(true); setError("")
-    try {
-      const prices = rows.map(r => ({
-        variant_id: r.variant_id,
-        custom_price: edits[r.variant_id] === "" ? null : edits[r.variant_id],
-      }))
-      await saveUserVariantPrices(user.id, prices)
-      onSaved()
-    } catch (err) { setError(err.message || "Failed to save prices.") }
-    finally { setSaving(false) }
-  }
-
-  const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ") || "User"
-  const overrideCount = Object.values(edits).filter(v => v !== "").length
-
-  // Group rows by product, filtered by search
-  const filteredRows = rows.filter(r => !search || r.product_name?.toLowerCase().includes(search.toLowerCase()))
-  const grouped = filteredRows.reduce((acc, r) => {
-    if (!acc[r.product_id]) acc[r.product_id] = { name: r.product_name, variants: [] }
-    acc[r.product_id].variants.push(r)
-    return acc
-  }, {})
-  const productIds = Object.keys(grouped)
-
-  return (
-    <>
-      <div className="modal fade show d-block" tabIndex="-1">
-        <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-          <div className="modal-content">
-
-            <div className="modal-header" style={{ background: '#0e606c' }}>
-              <div>
-                <h5 className="modal-title text-white mb-0"><i className="fa fa-dollar-sign me-2" />Manage Pricing</h5>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 }}>{fullName} · {overrideCount} custom price{overrideCount !== 1 ? 's' : ''} set</div>
-              </div>
-              <button type="button" className="btn-close btn-close-white" onClick={onClose} />
-            </div>
-
-            <div className="px-3 pt-3 pb-2 border-bottom" style={{ background: '#f8fafc' }}>
-              <div className="position-relative">
-                <i className="fa fa-search position-absolute" style={{ left: 12, top: '50%', transform: 'translateY(-50%)', color: '#aaa', zIndex: 2 }} />
-                <input type="text" className="form-control ps-4 ms-1" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} autoFocus />
-              </div>
-            </div>
-
-            <div className="modal-body" style={{ maxHeight: 420, overflowY: 'auto' }}>
-              {error && <div className="alert alert-danger py-2 d-flex gap-2"><i className="fa fa-exclamation-circle" /><small>{error}</small></div>}
-
-              {loading ? (
-                <div className="text-center py-5"><span className="spinner-border spinner-border-sm me-2" />Loading prices...</div>
-              ) : productIds.length === 0 ? (
-                <div className="text-center py-5 text-muted" style={{ fontSize: 14 }}>
-                  {search ? `No products found for "${search}"` : "No products assigned to this user yet. Assign products first, then set custom prices here."}
-                </div>
-              ) : (
-                productIds.map(pid => (
-                  <div key={pid} className="mb-4">
-                    <div className="fw-semibold mb-2" style={{ color: '#0e606c', fontSize: 14 }}>{grouped[pid].name}</div>
-                    <table className="table table-sm table-bordered mb-0">
-                      <thead className="table-light">
-                        <tr>
-                          <th>Variant</th>
-                          <th style={{ width: 130 }}>Default Price</th>
-                          <th style={{ width: 160 }}>Custom Price</th>
-                          <th style={{ width: 80 }}></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {grouped[pid].variants.map(v => (
-                          <tr key={v.variant_id}>
-                            <td className="align-middle">{v.quantity} {v.unit_name || ''}</td>
-                            <td className="align-middle text-muted">${parseFloat(v.default_price || 0).toFixed(2)}</td>
-                            <td className="align-middle">
-                              <input type="number" step="0.01" min="0" className="form-control form-control-sm"
-                                placeholder="Use default" value={edits[v.variant_id] ?? ""}
-                                onChange={e => handleChange(v.variant_id, e.target.value)} />
-                            </td>
-                            <td className="align-middle">
-                              {edits[v.variant_id] !== "" && (
-                                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => clearOverride(v.variant_id)}>Clear</button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="modal-footer d-flex justify-content-between align-items-center">
-              <div className="container-fluid">
-                {!loading && productIds.length > 0 && (
-                  <small className="text-primary fw-bold">Leave a field blank (or click Clear) to use the default selling price for that variant.</small>
-                )}
-              </div>
-              <span style={{ fontSize: 13, color: '#555' }}>{overrideCount} custom price{overrideCount !== 1 ? 's' : ''} set</span>
-              <div className="d-flex gap-2">
-                <button className="btn btn-outline-secondary" onClick={onClose}>Cancel</button>
-                <button className="btn text-white" style={{ background: '#0e606c' }} onClick={handleSave} disabled={saving || loading || rows.length === 0}>
-                  {saving ? <><span className="spinner-border spinner-border-sm me-2" />Saving...</> : <><i className="fa fa-save me-2" />Save Prices</>}
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-      <div className="modal-backdrop fade show" onClick={onClose} />
-    </>
-  )
-}
-
 const InfoRow = ({ label, value }) => (
   <div className="col-sm-6 mb-3">
     <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em', color: '#999', fontWeight: 600 }}>{label}</div>
@@ -391,13 +243,8 @@ function Users() {
   const [success, setSuccess] = useState("")
   const [deleting, setDeleting] = useState(null)
   const [assignUser, setAssignUser] = useState(null)
-  const [pricingUser, setPricingUser] = useState(null)
   const [viewUser, setViewUser] = useState(null)
   const navigate = useNavigate()
-
-  const [pendingOtpUsers, setPendingOtpUsers] = useState([])
-  const [showPendingOtpModal, setShowPendingOtpModal] = useState(false)
-  const [loadingPendingOtp, setLoadingPendingOtp] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -406,7 +253,6 @@ function Users() {
         if (!token) { navigate("/admin/login"); return }
         const res = await getUsers()
         setUsers(Array.isArray(res.data) ? res.data : [])
-        await loadPendingOtpUsers()
       } catch (err) {
         const msg = err.message || ""
         if (msg.toLowerCase().includes("unauthenticated") || msg.toLowerCase().includes("unauthorized")) {
@@ -441,23 +287,6 @@ function Users() {
     } catch (err) { setError(err.message) }
   }
 
-  const loadPendingOtpUsers = async () => {
-    try {
-      setLoadingPendingOtp(true)
-      const res = await getPendingOtpUsers()
-      setPendingOtpUsers(Array.isArray(res.data) ? res.data : [])
-    } catch (err) {
-      Swal.fire("Error", err.message || "Failed to load pending OTP users.", "error")
-    } finally {
-      setLoadingPendingOtp(false)
-    }
-  }
-
-  const refreshUsers = async () => {
-    const res = await getUsers()
-    setUsers(Array.isArray(res.data) ? res.data : [])
-  }
-
   const handleDelete = async (id) => {
     const result = await Swal.fire({ title: "Delete User?", text: "This action cannot be undone.", icon: "warning", showCancelButton: true, confirmButtonColor: "#dc3545", cancelButtonColor: "#6c757d", confirmButtonText: "Yes, Delete", cancelButtonText: "Cancel" })
     if (!result.isConfirmed) return
@@ -476,61 +305,16 @@ function Users() {
     setTimeout(() => setSuccess(""), 3000)
   }
 
-  const handlePricingSaved = () => {
-    setPricingUser(null)
-    setSuccess("Custom prices updated successfully!")
-    setTimeout(() => setSuccess(""), 3000)
-  }
-
-  const handlePendingOtpActivated = (id) => {
-    setPendingOtpUsers(prev => prev.filter(u => u.id !== id))
-
-    setUsers(prev =>
-      prev.map(u =>
-        u.id === id
-          ? { ...u, status: 1 }
-          : u
-      )
-    )
-
-    if (pendingOtpUsers.length === 1) {
-      setShowPendingOtpModal(false)
-    }
-
-    setSuccess("User activated successfully!")
-    setTimeout(() => setSuccess(""), 3000)
-  }
-
   return (
     <>
       <AdminPageHeader icon="fa-users" title="Users" subtitle="Manage customer accounts" right={
           <div className="d-flex gap-2">
-            {pendingOtpUsers.length > 0 && (
-              <button
-                className="btn btn-warning btn-sm"
-                onClick={() => setShowPendingOtpModal(true)}
-              >
-                <i className="fa fa-envelope me-2" />
-                Pending OTP ({pendingOtpUsers.length})
-              </button>
-            )}
-
             {users.filter(u => u.status === 5).length > 0 && (
-              <span
-                className="badge fs-6"
-                style={{ background: "#0dcaf0", color: "#000" }}
-              >
+              <span className="badge fs-6" style={{ background: '#0dcaf0', color: '#000' }}>
                 {users.filter(u => u.status === 5).length} Pending Approval
               </span>
             )}
-
-            <span
-              className="badge fs-6"
-              style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}
-            >
-              {users.length} Total
-            </span>
-
+            <span className="badge fs-6" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>{users.length} Total</span>
           </div>
         }
       />
@@ -544,7 +328,7 @@ function Users() {
           ) : users.length === 0 ? (
             <div className="text-center py-4 text-muted">No users found.</div>
           ) : (
-            <DataTable key={users.length} className="table table-hover mb-0 w-100 table-bordered" options={{ ...dtOptions, destroy: true, columnDefs: [{ targets: '_all', defaultContent: '—' }, { orderable: false, targets: [1, 7] }] }}>
+            <DataTable key={users.length} className="table table-hover mb-0 w-100" options={{ ...dtOptions, destroy: true, columnDefs: [{ targets: '_all', defaultContent: '—' }, { orderable: false, targets: [1, 7] }] }}>
               <thead><tr><th>#</th><th>Photo</th><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {users.map((u, i) => {
@@ -561,7 +345,7 @@ function Users() {
                       <td className="align-middle">{u.mobile || '—'}</td>
                       <td className="align-middle">
                         <div>{fmtDate(u.created_at)}</div>
-                        {u.last_login && <div style={{ fontSize: 12, color: '#888' }}>Last Login : {fmtDate(u.last_login)}</div>}
+                        {u.last_login && <div style={{ fontSize: 12, color: '#888' }}>Last: {fmtDate(u.last_login)}</div>}
                       </td>
                       <td className="align-middle">
                         <select className="form-select form-select-sm mb-1" style={{ minWidth: 110 }} value={u.status} onChange={e => handleStatusChange(u.id, parseInt(e.target.value), u.status)}>
@@ -573,7 +357,6 @@ function Users() {
                       <td className="align-middle">
                         <button className="btn btn-sm btn-outline-info m-1" title="View Details" onClick={() => setViewUser(u)}><i className="fa fa-eye" /></button>
                         <button className="btn btn-sm btn-outline-success m-1" title="Assign Products" onClick={() => setAssignUser(u)}><i className="fa fa-box" /></button>
-                        <button className="btn btn-sm btn-outline-primary m-1 d-none" title="Manage Pricing" onClick={() => setPricingUser(u)}><i className="fa fa-dollar-sign" /></button>
                         <button className="btn btn-sm btn-outline-danger m-1" title="Delete" onClick={() => handleDelete(u.id)} disabled={deleting === u.id}>
                           {deleting === u.id ? <span className="spinner-border spinner-border-sm" /> : <i className="fa fa-trash" />}
                         </button>
@@ -589,18 +372,6 @@ function Users() {
 
       {viewUser && <UserViewModal user={viewUser} onClose={() => setViewUser(null)} />}
       {assignUser && <AssignProductsModal user={assignUser} onClose={() => setAssignUser(null)} onSaved={handleAssignSaved} />}
-      {pricingUser && <VariantPricingModal user={pricingUser} onClose={() => setPricingUser(null)} onSaved={handlePricingSaved} />}
-      {showPendingOtpModal && (
-        <PendingOtpUsersModal
-          users={pendingOtpUsers}
-          onClose={() => setShowPendingOtpModal(false)}
-          onActivated={handlePendingOtpActivated}
-          onRefresh={async () => {
-            await loadPendingOtpUsers()
-            await refreshUsers()
-          }}
-        />
-      )}
     </>
   )
 }

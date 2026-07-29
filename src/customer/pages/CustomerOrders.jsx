@@ -1,3 +1,4 @@
+/*---- src\customer\pages\CustomerOrders.jsx ----*/
 import { useState, useEffect, useRef } from "react"
 import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'

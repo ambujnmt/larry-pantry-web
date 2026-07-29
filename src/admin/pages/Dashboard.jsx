@@ -39,7 +39,7 @@ function StatCard({ label, icon, bg, light, to, value, loading }) {
 }
 
 function Dashboard() {
-  const [counts, setCounts]         = useState({ users: 0, products: 0, categories: 0, brands: 0 })
+  const [counts, setCounts] = useState({ users: 0, products: 0, categories: 0, brands: 0, pending: 0 })
   const [recentUsers, setRecentUsers]       = useState([])
   const [recentProducts, setRecentProducts] = useState([])
   const [loading, setLoading]       = useState(true)
@@ -59,7 +59,7 @@ function Dashboard() {
         const categories = cRes.status === 'fulfilled' ? (cRes.value.data || []) : []
         const brands     = bRes.status === 'fulfilled'     ? (bRes.value.data     || []) : []
 
-        setCounts({ users: users.length, products: products.length, categories: categories.length, brands: brands.length })
+        setCounts({ users: users.length, products: products.length, categories: categories.length, brands: brands.length, pending: users.filter(u => u.status === 5).length, })
         setRecentUsers([...users].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5))
         setRecentProducts([...products].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5))
       } catch (_) {}
@@ -114,6 +114,25 @@ function Dashboard() {
         </div>
       </div>
 
+      {!loading && counts.pending > 0 && (
+        <Link to="/admin/users" className="text-decoration-none">
+          <div className="app-card shadow-sm mb-4" style={{ borderRadius: 12, border: 'none', background: '#e0f7fa' }}>
+            <div className="app-card-body p-3 d-flex align-items-center gap-3">
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: '#0dcaf0',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <i className="fa-solid fa-clock text-white" />
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#0b5560' }}>
+                  {counts.pending} customer{counts.pending !== 1 ? 's' : ''} waiting for approval
+                </div>
+                <div style={{ fontSize: 12, color: '#0e606c' }}>Click here to review and activate their accounts.</div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      )}
+            
       {/* ── Stat Cards ── */}
       <div className="row g-3 mb-4">
         {CARDS.map(c => (
@@ -161,9 +180,11 @@ function Dashboard() {
                       </div>
                       <div className="text-end flex-shrink-0">
                         <div style={{ fontSize: 12, color: '#aaa' }}>{fmtDate(u.created_at)}</div>
-                        <span className={`badge mt-1 ${u.status === 1 ? 'bg-success' : 'bg-secondary'}`} style={{ fontSize: 10 }}>
-                          {u.status === 1 ? 'Active' : 'Inactive'}
-                        </span>
+                        {(() => {
+                          const badgeMap = { 1: ['Active', 'bg-success'], 5: ['Pending Approval', 'bg-info'], 2: ['Inactive', 'bg-secondary'], 3: ['Suspended', 'bg-warning'] }
+                          const [label, cls] = badgeMap[u.status] ?? ['Inactive', 'bg-secondary']
+                          return <span className={`badge mt-1 ${cls}`} style={{ fontSize: 10 }}>{label}</span>
+                        })()}
                       </div>
                     </div>
                   ))}

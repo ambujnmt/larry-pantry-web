@@ -108,7 +108,7 @@ function Units() {
             </div>
           ) : (
             <DataTable
-              className="table table-hover mb-0 w-100"
+              className="table table-hover mb-0 w-100 table-bordered"
               options={{
                 ...dtOptions,
                 columnDefs: [
