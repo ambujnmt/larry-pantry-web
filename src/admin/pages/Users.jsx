@@ -342,6 +342,7 @@ function UserViewModal({ user, onClose }) {
               <div className="cp-section-title mt-2"><i className="fa-solid fa-building" style={{ color: "#0e606c" }} />Business Information</div>
               <div className="row">
                 <InfoRow label="Organization Type" value={user.organization_type} />
+                <InfoRow label="Business Name" value={user.business_name} />
                 <InfoRow label="Store Address" value={user.store_address} />
               </div>
 

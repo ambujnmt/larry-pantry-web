@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { customerLogin, customerRegister, customerVerifyOtp, customerForgotPassword, customerResetPassword, getCaptcha } from "../../utils/customerApi"
+import { customerLogin, customerRegister, customerVerifyOtp, customerResendOtp, customerForgotPassword, customerResetPassword } from "../../utils/customerApi"
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
@@ -39,31 +39,30 @@ const css = `
   .reg-step-label { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; margin-bottom:4px; }
 `
 
-const DAYS = ["saturday","sunday","monday","tuesday","wednesday","thursday","friday"]
-
 function CustomerLogin() {
   const [tab, setTab]               = useState("login")
   const [showPass, setShowPass]     = useState(false)
   const [showNewPass, setShowNewPass] = useState(false)
   const [loading, setLoading]       = useState(false)
   const [error, setError]           = useState("")
-  const [success, setSuccess]       = useState("")
 
-  // Shared account fields
+  // Login
   const [email, setEmail]           = useState("")
   const [password, setPassword]     = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [first_name, setFirstName]  = useState("")
-  const [last_name, setLastName]    = useState("")
-  const [mobile, setMobile]         = useState("")
-  const [mobile_2, setMobile_2]     = useState("")
-  const [regStep, setRegStep]       = useState(1) // 1, 2, 3
 
-  // Registration captcha
-  const [captchaId, setCaptchaId]       = useState("")
-  const [captchaImage, setCaptchaImage] = useState("")
-  const [captchaText, setCaptchaText]   = useState("")
-  const [showApprovalPopup, setShowApprovalPopup] = useState(false)
+  // Register
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [first_name, setFirstName]            = useState("")
+  const [last_name, setLastName]              = useState("")
+  const [mobile, setMobile]                   = useState("")
+  const [mobile_2, setMobile_2]                   = useState("")
+  const [regStep, setRegStep]                 = useState(1) // 1, 2, 3
+
+  // Register OTP
+  const [otpDigits, setOtpDigits]           = useState(["","","","","",""])
+  const [otpEmail, setOtpEmail]             = useState("")
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const otpRefs = useRef([])
 
   // Reset Password
   const [resetStep, setResetStep]               = useState(1)
@@ -73,6 +72,8 @@ function CustomerLogin() {
   const [newPassword, setNewPassword]           = useState("")
   const [confirmNewPassword, setConfirmNewPassword] = useState("")
   const resetOtpRefs = useRef([])
+  const [success, setSuccess] = useState("")
+  const [showApprovalPopup, setShowApprovalPopup] = useState(false)
 
   const navigate = useNavigate()
 
@@ -82,25 +83,16 @@ function CustomerLogin() {
   }, [navigate])
 
   useEffect(() => {
+    if (resendCooldown <= 0) return
+    const t = setTimeout(() => setResendCooldown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [resendCooldown])
+
+  useEffect(() => {
     if (resetResendCooldown <= 0) return
     const t = setTimeout(() => setResetResendCooldown(c => c - 1), 1000)
     return () => clearTimeout(t)
   }, [resetResendCooldown])
-
-  useEffect(() => {
-    if (regStep === 3) loadCaptcha()
-  }, [regStep])
-
-  const loadCaptcha = async () => {
-    try {
-      const res = await getCaptcha()
-      setCaptchaId(res.data.captcha_id)
-      setCaptchaImage(res.data.image)
-      setCaptchaText("")
-    } catch {
-      setError("Could not load captcha. Please refresh.")
-    }
-  }
 
   const switchTab = (t) => {
     setTab(t); setError(""); setSuccess("")
@@ -117,45 +109,63 @@ function CustomerLogin() {
     localStorage.setItem("customer_user", JSON.stringify(user))
   }
 
-  // Generic OTP box handlers (used for reset-password flow)
+  // Generic OTP box handlers
   const makeOtpHandlers = (digits, setDigits, refs) => ({
     onChange: (index, value) => {
       const cleanValue = value.replace(/\D/g, "")
       if (!cleanValue) return
+
       const updated = [...digits]
-      updated[index] = cleanValue.slice(-1)
+      const lastChar = cleanValue.slice(-1)
+      updated[index] = lastChar
       setDigits(updated)
+
       if (index < 5) {
-        setTimeout(() => { refs.current[index + 1]?.focus(); refs.current[index + 1]?.select() }, 10)
+        setTimeout(() => {
+          refs.current[index + 1]?.focus()
+          refs.current[index + 1]?.select() 
+        }, 10)
       }
     },
     onKeyDown: (index, e) => {
-      if (e.key !== "Backspace") return
-      e.preventDefault()
       const updated = [...digits]
-      if (digits[index]) {
-        updated[index] = ""; setDigits(updated)
-      } else if (index > 0) {
-        updated[index - 1] = ""; setDigits(updated); refs.current[index - 1]?.focus()
+
+      if (e.key === "Backspace") {
+        e.preventDefault() 
+        
+        if (digits[index]) {
+          updated[index] = ""
+          setDigits(updated)
+        } else if (index > 0) {
+          updated[index - 1] = ""
+          setDigits(updated)
+          refs.current[index - 1]?.focus()
+        }
       }
     },
     onPaste: (e) => {
       e.preventDefault()
       const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
       if (!pasted) return
+      
       const updated = [...digits]
-      pasted.split("").forEach((ch, i) => { if (i < 6) updated[i] = ch })
+      pasted.split("").forEach((ch, i) => {
+        if (i < 6) updated[i] = ch
+      })
       setDigits(updated)
-      refs.current[Math.min(pasted.length, 5)]?.focus()
+      const focusIndex = Math.min(pasted.length, 5)
+      refs.current[focusIndex]?.focus()
     },
   })
 
+  const regOtp   = makeOtpHandlers(otpDigits, setOtpDigits, otpRefs)
   const resetOtp = makeOtpHandlers(resetOtpDigits, setResetOtpDigits, resetOtpRefs)
 
   const [organizationType, setOrganizationType] = useState("")
   const [businessName, setBusinessName]         = useState("")
   const [storeAddress, setStoreAddress]         = useState("")
 
+  const DAYS = ["saturday","sunday","monday","tuesday","wednesday","thursday","friday"]
   const defaultHours = DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: "", close: "", closed: false } }), {})
   const [workingHours, setWorkingHours] = useState(defaultHours)
 
@@ -163,7 +173,7 @@ function CustomerLogin() {
     setWorkingHours(prev => ({ ...prev, [day]: { ...prev[day], [field]: value } }))
   }
 
-  // Family/Personal accounts skip the "Business Info" step and don't need a Business Name
+  // Family/Personal accounts skip the "Business Info" step entirely, and don't need a Business Name
   const isFamilyPersonal = organizationType === "Family/Personal"
 
   // ── LOGIN ──
@@ -182,12 +192,11 @@ function CustomerLogin() {
     if (!isFamilyPersonal && !businessName.trim()) { setError("Business name is required."); return false }
     if (!first_name.trim()) { setError("First name is required."); return false }
     if (!email.trim())      { setError("Email is required."); return false }
-    if (!mobile.trim())      { setError("Cell Phone is required."); return false }
     return true
   }
 
   const validateStep2 = () => {
-    if (isFamilyPersonal) return true
+    if (isFamilyPersonal) return true // Business info not required for Family/Personal
     if (!storeAddress.trim()) { setError("Please enter your store address."); return false }
     return true
   }
@@ -196,6 +205,7 @@ function CustomerLogin() {
     setError("")
     if (step === 2 && !validateStep1()) return
     if (step === 3) {
+      // Allow jumping directly from Step 1 -> Step 3 when Family/Personal (Step 2 skipped)
       if (regStep === 1 && !validateStep1()) return
       if (!validateStep2()) return
     }
@@ -205,28 +215,50 @@ function CustomerLogin() {
   // ── REGISTER SUBMIT (Step 3) ──
   const handleRegister = async (e) => {
     e.preventDefault()
+
     if (!password)               { setError("Password is required."); return }
     if (!confirmPassword)        { setError("Please confirm your password."); return }
     if (password !== confirmPassword) { setError("Passwords do not match."); return }
-    if (!captchaText.trim())     { setError("Please enter the captcha code."); return }
 
     setError(""); setLoading(true)
     try {
       await customerRegister({
         first_name, last_name, email, password,
-        password_confirmation: confirmPassword, mobile, mobile_2,
+        password_confirmation: confirmPassword, mobile,
         organization_type: organizationType,
         business_name: isFamilyPersonal ? "" : businessName,
         store_address: storeAddress,
         working_hours: workingHours,
-        captcha_id: captchaId,
-        captcha_text: captchaText,
       })
-      setShowApprovalPopup(true)
+      setOtpEmail(email); setOtpDigits(["","","","","",""]); setResendCooldown(60); setTab("otp")
+    } catch (err) { setError(err.message || "Registration failed.") }
+    finally { setLoading(false) }
+  }
+
+  // ── REGISTER OTP VERIFY ──
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    const otp = otpDigits.join("")
+    if (otp.length < 6) { setError("Please enter the complete 6-digit code."); return }
+    setError(""); setLoading(true)
+    try {
+      await customerVerifyOtp({ email: otpEmail, otp })
+      // saveAuth(data); navigate("/customer/dashboard") dont go on dashboard
+      setShowApprovalPopup(true)   // only popup visible
     } catch (err) {
-      setError(err.message || "Registration failed.")
-      loadCaptcha()
+      setError(err.message || "Invalid or expired OTP.")
+      setOtpDigits(["","","","","",""]); otpRefs.current[0]?.focus()
     } finally { setLoading(false) }
+  }
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return
+    setError(""); setLoading(true)
+    try {
+      await customerResendOtp({ email: otpEmail })
+      setResendCooldown(60); setOtpDigits(["","","","","",""]); otpRefs.current[0]?.focus()
+    } catch (err) { setError(err.message || "Could not resend OTP.") }
+    finally { setLoading(false) }
   }
 
   // ══════════════════════════════════
@@ -274,11 +306,15 @@ function CustomerLogin() {
       const otp = resetOtpDigits.join("")
       await customerResetPassword(resetEmail, null, newPassword, confirmNewPassword, otp)
       setSuccess("Password updated successfully. Please login with your new password.")
-      setTimeout(() => switchTab("login"), 4000)
+      setTimeout(() => {
+        switchTab("login")
+      }, 4000)
+
     } catch (err) { setError(err.message || "Could not update password.") }
     finally { setLoading(false) }
   }
 
+  // OTP boxes UI
   const OtpBoxes = ({ digits, handlers, refs }) => (
     <div className="d-flex justify-content-between gap-2 mb-4" onPaste={handlers.onPaste}>
       {digits.map((digit, i) => (
@@ -294,6 +330,7 @@ function CustomerLogin() {
     ? ["Account Info", "Security"]
     : ["Account Info", "Business Info", "Security"]
 
+  // Display index for the step indicator (Family/Personal skips step 2, so step 3 shows as "2 of 2")
   const displayStepNumber = isFamilyPersonal ? (regStep === 3 ? 2 : 1) : regStep
   const displayTotalSteps = isFamilyPersonal ? 2 : 3
   const dotSteps = isFamilyPersonal ? [1, 3] : [1, 2, 3]
@@ -329,7 +366,7 @@ function CustomerLogin() {
 
               <p className="cl-eyebrow mb-3">Customer Portal</p>
 
-              {tab !== "reset" && (
+              {tab !== "reset" && tab !== "otp" && (
                 <div className="d-flex gap-2 mb-4 p-1 rounded-3" style={{background:'#f1f5f9', width:'fit-content'}}>
                   <button className={`cl-tab ${tab === "login" ? "active" : ""}`} onClick={() => switchTab("login")}>Sign In</button>
                   <button className={`cl-tab ${tab === "register" ? "active" : ""}`} onClick={() => switchTab("register")}>Register</button>
@@ -391,6 +428,7 @@ function CustomerLogin() {
               {/* ════ REGISTER — WIZARD (2 OR 3 STEPS) ════ */}
               {tab === "register" && (
                 <>
+                  {/* Step indicator */}
                   <div className="mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <span className="reg-step-label">
@@ -407,6 +445,7 @@ function CustomerLogin() {
                   {/* ─── STEP 1: Account Info ─── */}
                   {regStep === 1 && (
                     <>
+                      {/*<p className="text-black mb-4" style={{fontSize:14}}>Let's start with your basic details</p>*/}
                       <div className="mb-3">
                         <label className="form-label small text-black">Organization Type</label>
                         <select className="form-control cl-input" value={organizationType}
@@ -420,6 +459,7 @@ function CustomerLogin() {
                         </select>
                       </div>
 
+                      {/* Business Name — not applicable for Family/Personal accounts */}
                       {!isFamilyPersonal && (
                         <div className="mb-3">
                           <label className="form-label small text-black">Business Name</label>
@@ -439,6 +479,7 @@ function CustomerLogin() {
                             <input type="text" className="form-control cl-input" placeholder="Enter first name" value={first_name} onChange={e => setFirstName(e.target.value)} required />
                           </div>
                         </div>
+
                         <div className="col-md-6 mb-3">
                           <label className="form-label small text-black">Last Name</label>
                           <div className="position-relative">
@@ -463,6 +504,7 @@ function CustomerLogin() {
                             <input type="text" className="form-control cl-input" value={mobile} maxLength={15} inputMode="numeric" onChange={(e)=>setMobile(e.target.value.replace(/\D/g,""))} />
                           </div>
                         </div>
+
                         <div className="col-md-6 mb-4">
                           <label className="form-label small text-black">Store Number</label>
                           <div className="position-relative">
@@ -472,7 +514,11 @@ function CustomerLogin() {
                         </div>
                       </div>
 
-                      <button type="button" className="btn text-white w-100 cl-btn" onClick={() => goToStep(isFamilyPersonal ? 3 : 2)}>
+                      <button
+                        type="button"
+                        className="btn text-white w-100 cl-btn"
+                        onClick={() => goToStep(isFamilyPersonal ? 3 : 2)}
+                      >
                         Next: {isFamilyPersonal ? "Security" : "Business Info"} <i className="fa fa-arrow-right ms-2" />
                       </button>
                     </>
@@ -481,6 +527,8 @@ function CustomerLogin() {
                   {/* ─── STEP 2: Business Info (skipped for Family/Personal) ─── */}
                   {regStep === 2 && !isFamilyPersonal && (
                     <>
+                      {/*<p className="text-black mb-4" style={{fontSize:14}}>Tell us about your business</p>*/}
+
                       <div className="mb-3">
                         <label className="form-label small text-black">Address</label>
                         <div className="position-relative">
@@ -523,7 +571,7 @@ function CustomerLogin() {
                     </>
                   )}
 
-                  {/* ─── STEP 3: Security + Captcha ─── */}
+                  {/* ─── STEP 3: Security ─── */}
                   {regStep === 3 && (
                     <>
                       <p className="text-black mb-4" style={{fontSize:14}}>Finally, set a password for your account</p>
@@ -546,32 +594,13 @@ function CustomerLogin() {
                           </div>
                         </div>
 
-                        <div className="mb-4">
-                          <label className="form-label small text-black">Enter the code shown below</label>
-                          {/* Flexbox has been used to align all elements in a single line.i */}
-                          <div className="d-flex align-items-center gap-2">
-                            
-                            {/* Captcha Image */}
-                            {captchaImage ? (
-                              <img src={captchaImage} alt="captcha" style={{ height: 45, borderRadius: 6, border: '1px solid #545c63', flexShrink: 0 }} />
-                            ) : (
-                              <div style={{ height: 45, width: 130, background: '#f1f5f9', borderRadius: 6, flexShrink: 0 }} />
-                            )}
-                            
-                            {/* Refresh Button */}
-                            <button type="button" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" onClick={loadCaptcha} style={{ height: 45, flexShrink: 0 }} title="Refresh Captcha">
-                              <i className="fa fa-refresh" />
-                            </button>
-
-                            {/* Input Box (Same Line) */}
-                            <input type="text" className="form-control cl-input" style={{ height: 45, paddingLeft: 12 }} placeholder="Enter code" value={captchaText} onChange={e => setCaptchaText(e.target.value)} 
-                              required />
-                          </div>
-                        </div>
-
                         <div className="d-flex gap-2">
-                          <button type="button" className="cl-btn-outline flex-grow-1"
-                            onClick={() => setRegStep(isFamilyPersonal ? 1 : 2)} disabled={loading}>
+                          <button
+                            type="button"
+                            className="cl-btn-outline flex-grow-1"
+                            onClick={() => setRegStep(isFamilyPersonal ? 1 : 2)}
+                            disabled={loading}
+                          >
                             <i className="fa fa-arrow-left me-2" />Back
                           </button>
                           <button type="submit" className="btn text-white cl-btn flex-grow-1" disabled={loading}>
@@ -581,6 +610,36 @@ function CustomerLogin() {
                       </form>
                     </>
                   )}
+                </>
+              )}
+
+              {/* ════ REGISTER OTP ════ */}
+              {tab === "otp" && (
+                <>
+                  <button type="button" className="cl-link d-flex align-items-center gap-1 mb-3" onClick={() => switchTab("register")}>
+                    <i className="fa fa-arrow-left" /> Back to Register
+                  </button>
+                  <div className="d-flex justify-content-center mb-3">
+                    <div style={{width:64,height:64,borderRadius:'50%',background:'#e1f5ee',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <i className="fa fa-envelope" style={{fontSize:26,color:'#0b5560'}} />
+                    </div>
+                  </div>
+                  <h2 className="fw-semibold text-center mb-1" style={{fontSize:22,color:'#111'}}>Verify your email</h2>
+                  <p className="text-center text-black mb-4" style={{fontSize:13.5}}>
+                    We've sent a 6-digit code to<br /><strong style={{color:'#0b5560'}}>{otpEmail}</strong>
+                  </p>
+                  <form onSubmit={handleVerifyOtp} noValidate>
+                    <OtpBoxes digits={otpDigits} handlers={regOtp} refs={otpRefs} />
+                    <button type="submit" className="btn text-white w-100 cl-btn mb-3" disabled={loading}>
+                      {loading ? <><span className="spinner-border spinner-border-sm me-2" />Verifying...</> : <><i className="fa fa-check-circle me-2" />Verify & Continue</>}
+                    </button>
+                  </form>
+                  <div className="text-center" style={{fontSize:13}}>
+                    <span className="text-black">Didn't receive the code? </span>
+                    {resendCooldown > 0
+                      ? <span style={{color:'#a0aec0'}}>Resend in {resendCooldown}s</span>
+                      : <button type="button" className="cl-link" onClick={handleResendOtp} disabled={loading}>Resend OTP</button>}
+                  </div>
                 </>
               )}
 
@@ -708,27 +767,32 @@ function CustomerLogin() {
           </div>
         </div>
 
+        {/*------- Modal to show Alert -------*/}
         {showApprovalPopup && (
-          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,.5)' }}>
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content text-center p-4">
-                <div className="d-flex justify-content-center mb-3">
-                  <div style={{width:56,height:56,borderRadius:'50%',background:'#e1f5ee',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <i className="fa fa-clock-o" style={{fontSize:22,color:'#0b5560'}} />
-                  </div>
+        <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content text-center p-4">
+              <div className="d-flex justify-content-center mb-3">
+                <div style={{width:56,height:56,borderRadius:'50%',background:'#e1f5ee',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <i className="fa fa-clock-o" style={{fontSize:22,color:'#0b5560'}} />
                 </div>
-                <h5 className="fw-semibold mb-2">Account Created!</h5>
-                <p className="text-muted mb-4">
-                  Please allow 48 business hours to process your account.<br/>
-                  We'll email you once it's activated.
-                </p>
-                <button className="btn text-white cl-btn" onClick={() => { setShowApprovalPopup(false); switchTab("login") }}>
-                  Okay, Got it
-                </button>
               </div>
+              <h5 className="fw-semibold mb-2">Account Created!</h5>
+              <p className="text-muted mb-4">
+                Please allow 48 business hours to process your account.<br/>
+                We'll email you once it's activated.
+              </p>
+              <button
+                className="btn text-white cl-btn"
+                onClick={() => { setShowApprovalPopup(false); switchTab("login") }}
+              >
+                Okay, Got it
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
+      {/*--------------------*/}
       </div>
     </>
   )

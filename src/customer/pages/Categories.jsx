@@ -14,6 +14,8 @@ const slugify = (str = "") =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
 
+const PAGE_SIZE = 24
+
 function Categories() {
   const { categorySlug } = useParams()
 
@@ -22,6 +24,7 @@ function Categories() {
   const [products, setProducts]                 = useState([])
   const [loading, setLoading]                   = useState(true)
   const [error, setError]                       = useState("")
+  const [visibleCount, setVisibleCount]         = useState(PAGE_SIZE)
 
   useEffect(() => {
     getWebsiteCategories()
@@ -56,6 +59,7 @@ function Categories() {
           })
 
           setProducts(fetchedProducts)
+          setVisibleCount(PAGE_SIZE)
         } else {
           setProducts([])
         }
@@ -236,18 +240,31 @@ function Categories() {
               ) : products.length === 0 ? (
                 <div className="text-center text-muted py-5">No products found in this category.</div>
               ) : (
-                <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
-                  {products.map(p => {
-                    const { selling, regular } = getPriceData(p)
-                    return (
-                      <div key={p.id} className="col">
-                        <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                          <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
-                        </Link>
-                      </div>
-                    )
-                  })}
-                </div>
+                <>
+                  <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
+                    {products.slice(0, visibleCount).map(p => {
+                      const { selling, regular } = getPriceData(p)
+                      return (
+                        <div key={p.id} className="col">
+                          <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                            <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
+                          </Link>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {visibleCount < products.length && (
+                    <div className="text-center mt-4">
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary px-4"
+                        onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                      >
+                        Load More ({products.length - visibleCount} more)
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
 
             </div>

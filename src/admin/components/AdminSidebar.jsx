@@ -151,11 +151,11 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </a>
 
           {/* Logo */}
-          <div className="app-branding" style={{ padding: '16px 16px 8px' }}>
+          <div className="app-branding">
             <Link to="/admin/dashboard" style={{ display: 'flex', alignItems: 'center' }}>
               <img src={logoUrl} alt="logo"
                 onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/logo.png" }}
-                style={{ maxHeight: 44, objectFit: 'contain' }} />
+                style={{ maxHeight: 76, objectFit: 'contain' }} />
             </Link>
           </div>
 

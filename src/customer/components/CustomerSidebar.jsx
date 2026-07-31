@@ -114,10 +114,10 @@ const CustomerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </a>
 
           {/* Logo */}
-          <div className="app-branding" style={{ padding: '16px 16px 8px' }}>
+          <div className="app-branding">
             <Link to="/customer/dashboard" style={{ display: 'flex', alignItems: 'center' }}>
               <img src="/admin-assets/images/logo.png" alt="logo"
-                style={{ maxHeight: 44, objectFit: 'contain' }} />
+                style={{ maxHeight: 76, objectFit: 'contain' }} />
             </Link>
           </div>
 

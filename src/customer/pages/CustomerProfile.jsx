@@ -103,6 +103,8 @@ function CustomerProfile() {
 
   const [organizationType, setOrganizationType] = useState("")
   const [storeAddress, setStoreAddress]         = useState("")
+  const [businessName, setBusinessName] = useState("")
+  const isFamilyPersonal = organizationType === "Family/Personal"
 
   const DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
   const defaultHours = DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: "", close: "", closed: false } }), {})
@@ -119,6 +121,7 @@ function CustomerProfile() {
     setMobile(u.mobile        || "")
     setOrganizationType(u.organization_type || "")
     setStoreAddress(u.store_address || "")
+    setBusinessName(u.business_name || "")
     if (u.working_hours) setWorkingHours({ ...defaultHours, ...u.working_hours })
     if (u.address)   { setAddressInput(u.address); setAddressLocked(true) }
     if (u.latitude)  setLat(String(u.latitude))
@@ -188,15 +191,22 @@ function CustomerProfile() {
       fd.append("email",      email)
       fd.append("mobile",     mobile)
       fd.append("organization_type", organizationType)
-      fd.append("store_address", storeAddress)
-      fd.append("working_hours", JSON.stringify(workingHours))
+      if (!isFamilyPersonal) {
+          fd.append("business_name", businessName)
+          fd.append("store_address", storeAddress)
+          fd.append("working_hours", JSON.stringify(workingHours))
+      } else {
+          fd.append("business_name", "")
+          fd.append("store_address", "")
+          fd.append("working_hours", "")
+      }
       if (addressInput) fd.append("address",   addressInput)
       if (lat)          fd.append("latitude",  lat)
       if (lng)          fd.append("longitude", lng)
 
       const res    = await updateProfile(fd)
       const updated = res?.data ?? res
-      const merged  = { first_name: firstName, last_name: lastName, email, mobile, organization_type: organizationType, store_address: storeAddress, working_hours: workingHours, address: addressInput, latitude: lat, longitude: lng, ...updated }
+      const merged  = { first_name: firstName, last_name: lastName, email, mobile, organization_type: organizationType, business_name: businessName, store_address: storeAddress, working_hours: workingHours, address: addressInput, latitude: lat, longitude: lng, ...updated }
       localStorage.setItem("customer_user", JSON.stringify(merged))
       setSuccess("Profile updated successfully!")
     } catch (err) {
@@ -478,6 +488,20 @@ function CustomerProfile() {
                         <option value="Family/Personal">Family / Personal</option>
                       </select>
                     </div>
+
+                    {!isFamilyPersonal && (
+                    <>
+                    <div className="col-sm-6">
+                        <label className="form-label fw-semibold">
+                            Business Name
+                        </label>
+
+                        <div className="cp-input-wrap">
+                            <i className="fa-solid fa-building cp-icon" />
+                            <input type="text" className="form-control" placeholder="Business Name" value={businessName} onChange={(e)=>setBusinessName(e.target.value)}/>
+                        </div>
+                    </div>
+
                     <div className="col-sm-6">
                       <label className="form-label fw-semibold" style={{ fontSize: 12.5, color: "#374151" }}>Store Address</label>
                       <div className="cp-input-wrap">
@@ -486,8 +510,12 @@ function CustomerProfile() {
                           value={storeAddress} onChange={e => setStoreAddress(e.target.value)} />
                       </div>
                     </div>
+                    </>
+                    )}
                   </div>
 
+                  {!isFamilyPersonal && (
+                  <>
                   <label className="form-label fw-semibold d-block mb-2" style={{ fontSize: 12.5, color: "#374151" }}>Working Hours</label>
                   {DAYS.map(day => (
                     <div key={day} className="d-flex align-items-center gap-2 mb-2">
@@ -505,6 +533,8 @@ function CustomerProfile() {
                         onChange={e => updateHour(day, 'close', e.target.value)} />
                     </div>
                   ))}
+                  </>
+                  )}
                 </div>
               </div>
 

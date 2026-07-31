@@ -49,14 +49,13 @@ const client = async (endpoint, { body, method = "GET", auth = false } = {}) => 
 export const customerLogin = (email, password) =>
   client("/login", { method: "POST", body: { email, password } })
 
-export const customerRegister = (data) =>
-  client("/register", { method: "POST", body: data })
+export const customerRegister = (data) => client("/register", { method: "POST", body: data })
 
-export const customerLogout = () =>
-  client("/logout", { method: "POST", auth: true })
+export const customerLogout = () => client("/logout", { method: "POST", auth: true })
 
-export const customerForgotPassword = (email) =>
-  client("/forgot-password", { method: "POST", body: { email } })
+export const getCaptcha = () => client("/captcha", { method: "GET" })
+
+export const customerForgotPassword = (email) => client("/forgot-password", { method: "POST", body: { email } })
 
 export const customerResetPassword = (email, _token, password, password_confirmation, otp) =>
   client("/create-new-password", { method: "POST", body: { email, otp, password } })

@@ -6,10 +6,13 @@ import ContactBanner from "../components/ContactBanner";
 import Newsletter from "../components/Newsletter";
 import { getNewArrivals } from "../../utils/websiteApi";
 
+const PAGE_SIZE = 24
+
 function SpecialOffers() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState("")
+  const [products, setProducts]   = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState("")
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   useEffect(() => {
     const load = async () => {
@@ -17,6 +20,7 @@ function SpecialOffers() {
       try {
         const res = await getNewArrivals()
         setProducts(res.data || [])
+        setVisibleCount(PAGE_SIZE)
       } catch (err) {
         setError(err.message || "Failed to load special offers.")
       } finally {
@@ -66,18 +70,31 @@ function SpecialOffers() {
               No special offers available right now. Check back soon!
             </div>
           ) : (
-            <div className="row g-4">
-              {products.map(p => {
-                const { selling, regular } = getPriceData(p)
-                return (
-                  <div key={p.id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6">
-                    <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                      <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
-                    </Link>
-                  </div>
-                )
-              })}
-            </div>
+            <>
+              <div className="row g-4">
+                {products.slice(0, visibleCount).map(p => {
+                  const { selling, regular } = getPriceData(p)
+                  return (
+                    <div key={p.id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6">
+                      <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
+                      </Link>
+                    </div>
+                  )
+                })}
+              </div>
+              {visibleCount < products.length && (
+                <div className="text-center mt-4">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary px-4"
+                    onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                  >
+                    Load More ({products.length - visibleCount} more)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
