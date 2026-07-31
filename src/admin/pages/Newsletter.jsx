@@ -4,6 +4,7 @@ import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'
 import { getNewsletterSubscribers, deleteNewsletterSubscriber, dtOptions } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
+import { formatDate, formatDateTime  } from '../../utils/helpers';
 
 DataTable.use(DT)
 
@@ -70,9 +71,9 @@ function Newsletter() {
               className="table table-striped table-bordered table-hover"
               options={{
                 ...dtOptions,
-                order: [[0, 'desc']],
+                // order: [[0, 'desc']],
                 columnDefs: [
-                  { orderable: false, targets: [2] }
+                  { orderable: false, targets: [3] }
                 ]
               }}
             >
@@ -80,6 +81,7 @@ function Newsletter() {
                 <tr>
                   <th>#</th>
                   <th>Email</th>
+                  <th>Date</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -90,6 +92,7 @@ function Newsletter() {
                   <tr key={sub.id}>
                     <td className="align-middle">{index + 1}</td>
                     <td className="align-middle fw-semibold">{sub.email}</td>
+                    <td className="align-middle" onClick={() => openView(sub)}>{formatDate(sub.created_at)}</td>
                     <td className="align-middle">
                       <button
                         className="btn btn-sm btn-outline-danger"

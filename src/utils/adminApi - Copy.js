@@ -1,16 +1,15 @@
-/*---- C:\xampp\htdocs\larry-pantry\src\utils\adminApi.js ----*/
 // ─── Config ───────────────────────────────────────────────────────────────────
 /*-- For Live --*/
 // const API_BASE_URL = "https://restaurantpantryla.com/api"
 // export const STORAGE_URL = "https://restaurantpantryla.com/admin_images/"
 
 /*-- For Netilify --*/
-const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api"
-export const STORAGE_URL = "https://site2demo.in/larry-pantry-api/admin_images/"
+// const API_BASE_URL = "https://site2demo.in/larry-pantry-api/api"
+// export const STORAGE_URL = "https://site2demo.in/larry-pantry-api/admin_images/"
 
 /*-- For Local --*/
-// const API_BASE_URL = "http://localhost/larry-pantry-api/api"
-// export const STORAGE_URL = "http://localhost/larry-pantry-api/admin_images/"
+const API_BASE_URL = "http://localhost/larry-pantry-api/api"
+export const STORAGE_URL = "http://localhost/larry-pantry-api/admin_images/"
 
 export const dtOptions = {
   pageLength: 50,
@@ -92,21 +91,13 @@ export const changeAdminPassword = (old_password, new_password) =>
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 export const getUsers = () => client("/admin/users", { auth: true })
-
-export const getPendingOtpUsers = () => client("/admin/users/pending-otp", { auth: true })
-export const activatePendingOtpUser = (id) => client(`/admin/users/${id}/activate-pending-otp`, { method: "POST", auth: true, })
-
 export const getUser = (id) => client(`/admin/users/${id}`, { auth: true })
-export const updateUserStatus = (id, status) => client(`/admin/users/${id}/status`, { method: "POST", auth: true, body: { status } })
+export const updateUserStatus = (id, status) =>
+  client(`/admin/users/${id}/status`, { method: "POST", auth: true, body: { status } })
 export const deleteUser = (id) => client(`/admin/users/${id}`, { method: "DELETE", auth: true })
 export const getUserProducts = (id) => client(`/admin/users/${id}/products`, { auth: true })
 export const assignUserProducts = (id, product_ids) =>
   client(`/admin/users/${id}/assign-products`, { method: "POST", auth: true, body: { product_ids } })
-
-// Customer-specific variant price overrides
-export const getUserVariantPrices = (id) => client(`/admin/users/${id}/variant-prices`, { auth: true })
-export const saveUserVariantPrices = (id, prices) =>
-  client(`/admin/users/${id}/variant-prices`, { method: "POST", auth: true, body: { prices } })
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
@@ -153,7 +144,7 @@ export const getAdminOrderDetail = (id) => client(`/admin/orders/${id}`, { auth:
 export const updateOrderStatus = (id, status, remarks = "", changed_by = null) =>  client(`/admin/orders/${id}/status`, {
     method: "POST", auth: true, body: {status, remarks, changed_by} })
 
-// upload / update (QuickBooks) invoice PDF for an order — same endpoint does both
+// NEW: upload / update (QuickBooks) invoice PDF for an order — same endpoint does both
 export const uploadOrderInvoice = (id, file) => {
   const formData = new FormData()
   formData.append("invoice", file)
@@ -175,13 +166,12 @@ export const getSlider = (id) => client(`/admin/sliders/${id}`, { auth: true })
 export const createSlider = (formData) => formRequest("/admin/sliders", formData)
 export const updateSlider = (id, formData) => formRequest(`/admin/sliders/${id}`, formData)
 export const deleteSlider = (id) => client(`/admin/sliders/${id}`, { method: "DELETE", auth: true })
-export const updateSliderStatus = (id, status) => client(`/admin/sliders/${id}/status`, { method: "POST", auth: true, body: data })
+export const updateSliderStatus = (id, status) => client(`/admin/sliders/${id}/status`, { method: "POST", auth: true, body: { status } })
 
 // ─── Contact Messages ─────────────────────────────────────────────────────────
 export const getContactMessages   = ()   => client("/admin/messages", { auth: true })
 export const getContactMessage    = (id) => client(`/admin/messages/${id}`, { auth: true })
 export const deleteContactMessage = (id) => client(`/admin/messages/${id}`, { method: "DELETE", auth: true })
-export const replyContactMessage = (id, data) => client(`/admin/messages/${id}/reply`, { method: "POST", body: data, auth: true })
 
 // ─── Newsletter Subscribers ────────────────────────────────────────────────
 export const getNewsletterSubscribers   = ()   => client("/admin/newsletter-subscribers", { auth: true })

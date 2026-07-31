@@ -16,6 +16,7 @@ function Home() {
   const [sliders,     setSliders]     = useState([])
   const [dataLoaded,  setDataLoaded]  = useState(false)
   const [activeCat, setActiveCat] = useState(null)
+  
   // Category name URL-friendly : "Fresh Vegetables" -> "fresh-vegetables"
   const slugify = (str = "") =>
     str.toString().toLowerCase().trim()
@@ -35,9 +36,8 @@ function Home() {
         ])
         setCategories(catRes.data  || [])
         setBestSellers(bsRes.data  || [])
-        console.log(bsRes.data)
         setNewArrivals(naRes.data  || [])
-        setFeatured(ftRes.data     || [])
+        setFeatured(ftRes.data      || [])
         setSliders(sliderRes.data  || [])
       } catch (e) {
         console.error("Home data load failed:", e)
@@ -142,10 +142,14 @@ function Home() {
     return () => clearTimeout(timer)
 }, [dataLoaded, activeCat])
 
-  const getPrice = (product) => {
-    const v = product.variants?.[0]
-    if (!v) return "—"
-    return `$${parseFloat(v.selling_price).toFixed(2)}`
+  // Returns { selling, regular } as numbers (or null) from the product's default/first variant
+  const getPriceData = (product) => {
+    const variants = product.variants || []
+    const v = variants.find(x => x.is_default == 1) || variants[0]
+    if (!v) return { selling: null, regular: null }
+    const selling = v.selling_price != null ? parseFloat(v.selling_price) : null
+    const regular = v.regular_price ? parseFloat(v.regular_price) : null
+    return { selling, regular }
   }
 
   const getImage = (product) =>
@@ -184,6 +188,29 @@ function Home() {
           opacity: 0;
           overflow: hidden;
           max-height: 300px;
+        }
+        /* Custom category image fallback container style */
+        .category-image-box {
+          position: relative;
+          background-color: #f3f4f6;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          min-height: 176px;
+        }
+        .category-image-box img {
+          width: 100%;
+          height: auto;
+          object-fit: cover;
+        }
+        .category-fallback-initial {
+          position: absolute;
+          font-size: 28px;
+          font-weight: 700;
+          color: #0e606c;
+          display: none;
         }
       `}</style>
 
@@ -230,7 +257,21 @@ function Home() {
                   <h5 className="category-name fw-semibold mb-4">{cat.category_name}</h5>
                   <div className="category-image">
                     <Link to={`/categories/${slugify(cat.category_name)}`}>
-                      <img src={cat.image} alt={cat.category_name} onError={e => { e.target.onerror = null; e.target.src = "assets/images/categories/fresh_vegetables.webp" }} />
+                      <div className="category-image-box">
+                        <span className="category-fallback-initial">
+                          {cat.category_name ? cat.category_name.charAt(0).toUpperCase() : ""}
+                        </span>
+                        <img 
+                          src={cat.image || ""} 
+                          alt="" 
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          onError={e => {
+                            e.target.style.display = 'none';
+                            const fallback = e.target.parentElement.querySelector('.category-fallback-initial');
+                            if (fallback) fallback.style.display = 'block';
+                          }} 
+                        />
+                      </div>
                     </Link>
                   </div>
                   <div className="category-content"><p>{cat.products_count} Products</p></div>
@@ -267,11 +308,14 @@ function Home() {
           </div>
           <div className="product-border-box">
             <div className="product-slider-active-4" key={activeCat}>
-              {filteredBestSellers.map(p => (
-                <Link to={`/product/${p.slug || p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} stickers={p.stickers || []} />
-                </Link>
-              ))}
+              {filteredBestSellers.map(p => {
+                const { selling, regular } = getPriceData(p)
+                return (
+                  <Link to={`/product/${p.slug || p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -284,18 +328,20 @@ function Home() {
           <div className="row">
             <div className="col-12 position-relative">
               <div className="section-title-wrap">
-                {/*<h2 className="section-title">New Arrivals</h2>*/}
                 <h2 className="section-title">Special Offers</h2>
                 <p>Check out our new collection and see what's new. Be sure to review the product details before placing your order.</p>
               </div>
             </div>
           </div>
           <div className="product-slider-active product-border-box">
-            {newArrivals.map((p) => (
-              <Link key={p.id} to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
-              </Link>
-            ))}
+            {newArrivals.map((p) => {
+              const { selling, regular } = getPriceData(p)
+              return (
+                <Link key={p.id} to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
+                </Link>
+              )
+            })}
           </div>
 
         </div>
@@ -307,9 +353,6 @@ function Home() {
 
       {/* Newsletter */}
       <Newsletter />
-
-      {/* Features */}
-      {/*<FeatureIcons />*/}
 
     </main>
   );

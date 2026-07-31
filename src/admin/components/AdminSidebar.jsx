@@ -27,6 +27,7 @@ const NAV = [
       { to: "/admin/settings/logo",         icon: "fa-image",        label: "Website Logo" },
       { to: "/admin/sliders", icon: "fa-images", label: "Sliders" },
       { to: "/admin/settings/bottom-banners", icon: "fa-image", label: "Bottom Banners" },
+      { to: "/admin/settings/popup-notice", icon: "fa-bell", label: "Popup Notice" },
     ],
   },
   {
@@ -150,11 +151,11 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </a>
 
           {/* Logo */}
-          <div className="app-branding" style={{ padding: '16px 16px 8px' }}>
+          <div className="app-branding">
             <Link to="/admin/dashboard" style={{ display: 'flex', alignItems: 'center' }}>
               <img src={logoUrl} alt="logo"
                 onError={e => { e.target.onerror = null; e.target.src = "/admin-assets/images/logo.png" }}
-                style={{ maxHeight: 44, objectFit: 'contain' }} />
+                style={{ maxHeight: 76, objectFit: 'contain' }} />
             </Link>
           </div>
 

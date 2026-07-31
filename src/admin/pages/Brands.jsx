@@ -80,7 +80,7 @@ function Brands() {
         {loading ? (
           <div className="text-center py-4"><span className="spinner-border spinner-border-sm me-2" />Loading...</div>
         ) : (
-          <DataTable className="table table-hover mb-0 w-100" options={{ ...dtOptions, columnDefs: [{ targets: "_all", defaultContent: "" }, { orderable: false, targets: [3] }] }}>
+          <DataTable className="table table-hover mb-0 w-100 table-bordered" options={{ ...dtOptions, columnDefs: [{ targets: "_all", defaultContent: "" }, { orderable: false, targets: [3] }] }}>
             <thead><tr><th>#</th><th>Brand Name</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
               {brands.length === 0 ? (

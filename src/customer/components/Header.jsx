@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getWebsiteContact, getWebsiteSocial, getWebsiteLogo } from "../../utils/websiteApi";
 import SearchBox from "./SearchBox";
+import WelcomePopupModal from "../components/WelcomePopupModal"
 
 function Header() {
   const [contact, setContact] = useState({ phone: "", email: "", address: "" })
@@ -40,14 +41,14 @@ function Header() {
     { to: "/about", label: "About Us" },
     // { to: "#", label: "Food Menu" },
     { to: "/categories", label: "Categories" },
-    { to: "#", label: "Special Offers / Deals" },
+    { to: "/special-offers", label: "Special Offers / Deals" },
     { to: "/qa", label: "FAQ" },
     { to: "/contact", label: "Contact Us" },
   ]
 
   return (
     <header className="header">
-
+      <WelcomePopupModal mode="website" />
       {/* ========== DESKTOP HEADER ========== */}
       <div className="desktop-header header1 d-none d-lg-block">
 
@@ -130,7 +131,7 @@ function Header() {
                       <li><Link to="/about">About Us</Link></li>
                       {/*<li><Link to="#">Food Menu</Link></li>*/}
                       <li><Link to="/categories">Categories</Link></li>
-                      <li><Link to="#">Special Offers / Deals</Link></li>
+                      <li><Link to="/special-offers">Special Offers / Deals</Link></li>
                       <li><Link to="/qa">FAQ</Link></li>
                       <li><Link to="/contact">Contact Us</Link></li>
                     </ul>

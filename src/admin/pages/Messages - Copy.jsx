@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import DataTable from 'datatables.net-react'
 import DT from 'datatables.net-bs5'
-import { getContactMessages, getContactMessage, deleteContactMessage, replyContactMessage, dtOptions } from "../../utils/adminApi"
+import { getContactMessages, getContactMessage, deleteContactMessage, dtOptions } from "../../utils/adminApi"
 import AdminPageHeader from "../../admin/components/AdminPageHeader"
 import { formatDate, formatDateTime  } from '../../utils/helpers';
 
@@ -18,13 +18,6 @@ function Messages() {
   const [showModal, setShowModal]     = useState(false)
   const [viewItem, setViewItem]       = useState(null)
   const [viewLoading, setViewLoading] = useState(false)
-
-  const [reply, setReply] = useState("")
-  const [sendingReply, setSendingReply] = useState(false)
-  const [replyHistory, setReplyHistory] = useState([])
-
-  const [replySuccess, setReplySuccess] = useState("")
-  const [replyError, setReplyError] = useState("")
 
   const loadMessages = async () => {
     try {
@@ -43,11 +36,10 @@ function Messages() {
     setViewLoading(true)
     setViewItem(msg)
     try {
-      // The API call that also marks the message as "read".
+      // API call jo message ko "read" mark bhi karti hai
       const data = await getContactMessage(msg.id)
       setViewItem(data.data)
-      setReply("")
-      setReplyHistory(data.data.replies || [])
+      // list mein bhi status update kar dein (badge turant refresh ho jaye)
       setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 1 } : m))
     } catch (err) {
       setError(err.message)
@@ -70,35 +62,6 @@ function Messages() {
     } finally { setDeleting(null) }
   }
 
-  const handleReply = async () => {
-    if (!reply.trim()) {
-      alert("Please enter your reply.")
-      return
-    }
-    setSendingReply(true)
-    try {
-      await replyContactMessage(viewItem.id, {
-        reply: reply
-      })
-      setReplySuccess("Reply sent successfully.")
-      setReplyError("")
-      setReplyHistory(prev => [
-        {
-          reply: reply,
-          created_at: new Date().toISOString()
-        },
-        ...prev,
-      ])
-      setReply("")
-      setTimeout(() => setSuccess(""), 3000)
-    } catch (err) {
-      setReplyError(err.message || "Reply failed.")
-      setReplySuccess("")
-    } finally {
-      setSendingReply(false)
-    }
-  }
-
   return (
     <>
       <AdminPageHeader
@@ -108,10 +71,14 @@ function Messages() {
       />
 
       {success && (
-        <div className="alert alert-success d-flex align-items-center gap-2 py-2"><i className="fa fa-check-circle" /><small>{success}</small></div>
+        <div className="alert alert-success d-flex align-items-center gap-2 py-2">
+          <i className="fa fa-check-circle" /><small>{success}</small>
+        </div>
       )}
       {error && (
-        <div className="alert alert-danger d-flex align-items-center gap-2 py-2"><i className="fa fa-exclamation-circle" /><small>{error}</small></div>
+        <div className="alert alert-danger d-flex align-items-center gap-2 py-2">
+          <i className="fa fa-exclamation-circle" /><small>{error}</small>
+        </div>
       )}
 
       <div className="app-card shadow-sm">
@@ -182,7 +149,7 @@ function Messages() {
       {showModal && (
         <>
           <div className="modal fade show d-block" tabIndex="-1">
-            <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">
@@ -224,38 +191,6 @@ function Messages() {
                           Received: { formatDateTime(viewItem.created_at)}
                         </small>
                       </div>
-                      {/*------- reply section ----*/}
-                      <hr />
-                      <h6 className="mb-2">Reply</h6>
-                      <textarea className="form-control" rows="4" placeholder="Type your reply..." value={reply} onChange={(e) => setReply(e.target.value)}></textarea>
-                      <div className="d-flex justify-content-between align-items-center mt-2">
-                        <div>
-                          {replySuccess && <small className="text-success"><i className="fa fa-check-circle me-1"></i>{replySuccess}</small>}
-                          {replyError && <small className="text-danger"><i className="fa fa-times-circle me-1"></i>{replyError}</small>}
-                        </div>
-
-                        <button className="btn btn-primary" onClick={handleReply} disabled={sendingReply}>
-                          {sendingReply ? <><span className="spinner-border spinner-border-sm me-2"></span>Sending...</> : <><i className="fa fa-paper-plane me-2"></i>Send Reply</>}
-                        </button>
-                      </div>
-                      {/*------- reply history ---------*/}
-                      {replyHistory.length > 0 && (
-                        <>
-                          <hr />
-                          <h6 className="mb-3">Reply History</h6>
-                          {replyHistory.map((item, index) => (
-                            <div key={index} className="border rounded p-2 mb-2" style={{ background: "#f8f9fa" }}>
-                              <div style={{ whiteSpace: "pre-line" }}>
-                                {item.reply}
-                              </div>
-                              <small className="text-muted">
-                                {formatDateTime(item.created_at)}
-                              </small>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      {/*---------------*/}
                     </>
                   )}
                 </div>

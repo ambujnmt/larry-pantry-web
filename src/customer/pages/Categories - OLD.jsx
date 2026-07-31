@@ -7,7 +7,7 @@ import FeatureIcons from "../components/FeatureIcons";
 import ProductCard from "../components/ProductCard";
 import { getWebsiteCategories, getProductsByCategory } from "../../utils/websiteApi";
 
-// This makes the category name URL-friendly: "Fresh Vegetables" -> "fresh-vegetables"
+
 const slugify = (str = "") =>
   str.toString().toLowerCase().trim()
     .replace(/&/g, "and")
@@ -30,7 +30,10 @@ function Categories() {
       .finally(() => setCategoriesLoaded(true))
   }, [])
 
-  const activeCategory = categories.find(c => slugify(c.category_name) === categorySlug)
+  // Default to the first category if categorySlug is not provided
+  const activeCategory = categorySlug
+    ? categories.find(c => slugify(c.category_name) === categorySlug)
+    : categories[0]
 
   useEffect(() => {
     if (!categoriesLoaded) return
@@ -38,9 +41,15 @@ function Categories() {
     const load = async () => {
       setLoading(true); setError("")
       try {
-        const categoryId = categorySlug ? activeCategory?.id : null
-        const res = await getProductsByCategory(categoryId || null)
-        setProducts(res.data || [])
+        // Fallback to first category ID if categorySlug is omitted
+        const categoryId = categorySlug ? activeCategory?.id : categories[0]?.id
+        
+        if (categoryId) {
+          const res = await getProductsByCategory(categoryId)
+          setProducts(res.data || [])
+        } else {
+          setProducts([])
+        }
       } catch (err) {
         setError(err.message || "Failed to load products.")
       } finally {
@@ -48,7 +57,7 @@ function Categories() {
       }
     }
     load()
-  }, [categoriesLoaded, categorySlug, activeCategory?.id])
+  }, [categoriesLoaded, categorySlug, activeCategory?.id, categories])
 
   const getPrice = (product) => {
     const v = product.variants?.[0]
@@ -142,7 +151,6 @@ function Categories() {
       `}</style>
 
       <main>
-
         {/* Breadcrumb Start */}
         <section className="breadcrumb-section">
           <div className="container">
@@ -162,23 +170,16 @@ function Categories() {
         </section>
         {/* Breadcrumb End */}
 
-        {/* inner Page — Blinkit-style split layout */}
+        {/* inner Page */}
         <section className="page-secton-wrapper">
           <div className="cat-rail-wrapper">
 
-            {/* Category Rail (always beside products, never below) */}
+            {/* Category Rail */}
             <div className="cat-rail pb-2">
-              <Link
-                to="/categories"
-                className={`cat-rail-item ${!categorySlug ? "active" : ""}`}
-              >
-                <span className="cat-rail-icon-fallback">All</span>
-                <span>All Items</span>
-              </Link>
-
-              {categories.map(cat => {
+              {categories.map((cat, index) => {
                 const slug = slugify(cat.category_name)
-                const isActive = slug === categorySlug
+                // Highlight item if slug matches URL OR if no slug in URL and this is the first category
+                const isActive = categorySlug ? slug === categorySlug : index === 0
                 return (
                   <Link
                     key={cat.id}
@@ -226,7 +227,7 @@ function Categories() {
                   {products.map(p => (
                     <div key={p.id} className="col">
                       <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                        <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} />
+                        <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} stickers={p.stickers || []} />
                       </Link>
                     </div>
                   ))}
@@ -238,12 +239,9 @@ function Categories() {
 
           </div>
         </section>
-        {/* inner Page End */}
 
         <ContactBanner />
         <Newsletter />
-        {/*<FeatureIcons />*/}
-
       </main>
     </>
   )

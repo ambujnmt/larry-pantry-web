@@ -123,7 +123,7 @@ function Sliders() {
           {loading ? (
             <div className="text-center py-4"><span className="spinner-border spinner-border-sm me-2" />Loading...</div>
           ) : (
-            <DataTable className="table table-hover mb-0 w-100"
+            <DataTable className="table table-hover mb-0 w-100 table-bordered"
               options={{ ...dtOptions, columnDefs: [{ targets: '_all', defaultContent: '' }, { orderable: false, targets: [1, 4] }] }}>
               <thead>
                 <tr>

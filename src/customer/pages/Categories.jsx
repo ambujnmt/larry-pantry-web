@@ -14,6 +14,8 @@ const slugify = (str = "") =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
 
+const PAGE_SIZE = 24
+
 function Categories() {
   const { categorySlug } = useParams()
 
@@ -22,6 +24,7 @@ function Categories() {
   const [products, setProducts]                 = useState([])
   const [loading, setLoading]                   = useState(true)
   const [error, setError]                       = useState("")
+  const [visibleCount, setVisibleCount]         = useState(PAGE_SIZE)
 
   useEffect(() => {
     getWebsiteCategories()
@@ -46,7 +49,17 @@ function Categories() {
         
         if (categoryId) {
           const res = await getProductsByCategory(categoryId)
-          setProducts(res.data || [])
+          let fetchedProducts = res.data || []
+
+          // --- AI/Client Fix: Sort alike items together (Alphabetically by product name) ---
+          fetchedProducts.sort((a, b) => {
+            const nameA = (a.name || "").toLowerCase()
+            const nameB = (b.name || "").toLowerCase()
+            return nameA.localeCompare(nameB)
+          })
+
+          setProducts(fetchedProducts)
+          setVisibleCount(PAGE_SIZE)
         } else {
           setProducts([])
         }
@@ -59,9 +72,14 @@ function Categories() {
     load()
   }, [categoriesLoaded, categorySlug, activeCategory?.id, categories])
 
-  const getPrice = (product) => {
-    const v = product.variants?.[0]
-    return v ? `$${parseFloat(v.selling_price).toFixed(2)}` : "—"
+  // Returns { selling, regular } as numbers (or null) from the product's default/first variant
+  const getPriceData = (product) => {
+    const variants = product.variants || []
+    const v = variants.find(x => x.is_default == 1) || variants[0]
+    if (!v) return { selling: null, regular: null }
+    const selling = v.selling_price != null ? parseFloat(v.selling_price) : null
+    const regular = v.regular_price ? parseFloat(v.regular_price) : null
+    return { selling, regular }
   }
   const getImage = (product) =>
     product.primary_image?.image_url || "/assets/img/no-image.jpg"
@@ -178,7 +196,6 @@ function Categories() {
             <div className="cat-rail pb-2">
               {categories.map((cat, index) => {
                 const slug = slugify(cat.category_name)
-                // Highlight item if slug matches URL OR if no slug in URL and this is the first category
                 const isActive = categorySlug ? slug === categorySlug : index === 0
                 return (
                   <Link
@@ -223,15 +240,31 @@ function Categories() {
               ) : products.length === 0 ? (
                 <div className="text-center text-muted py-5">No products found in this category.</div>
               ) : (
-                <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
-                  {products.map(p => (
-                    <div key={p.id} className="col">
-                      <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                        <ProductCard productId={p.id} name={p.name} price={getPrice(p)} image={getImage(p)} stickers={p.stickers || []} />
-                      </Link>
+                <>
+                  <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
+                    {products.slice(0, visibleCount).map(p => {
+                      const { selling, regular } = getPriceData(p)
+                      return (
+                        <div key={p.id} className="col">
+                          <Link to={`/product/${p.slug || p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                            <ProductCard productId={p.id} name={p.name} price={selling} regularPrice={regular} image={getImage(p)} stickers={p.stickers || []} />
+                          </Link>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {visibleCount < products.length && (
+                    <div className="text-center mt-4">
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary px-4"
+                        onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                      >
+                        Load More ({products.length - visibleCount} more)
+                      </button>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
 
             </div>
